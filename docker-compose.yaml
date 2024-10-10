@@ -1,0 +1,32 @@
+services:
+
+  envoy:
+    image: envoyproxy/envoy:v1.31.0
+
+    command: ["envoy", "-c", "/input/src/test/resources/integration-test/envoy-xfcc.yaml"]
+
+    volumes:
+      - ./:/input:ro
+
+    ports:
+      - "8443:8443"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.0
+
+    entrypoint: /bin/bash
+    command:
+      - -cxe
+      - |
+        /opt/keycloak/bin/kc.sh import --file /input/src/test/resources/integration-test/keycloak-realm.json
+        /opt/keycloak/bin/kc.sh start --spi-x509cert-lookup-provider=envoy
+
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HOSTNAME=https://keycloak.127.0.0.1.nip.io:8443
+      - KC_HTTP_ENABLED=true
+
+    volumes:
+      - ./:/input:ro
+      - ./target/keycloak-client-cert-lookup-for-envoy-1.0-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-client-cert-lookup-for-envoy.jar:ro
