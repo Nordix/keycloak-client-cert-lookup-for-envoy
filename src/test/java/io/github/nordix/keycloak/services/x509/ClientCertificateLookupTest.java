@@ -18,7 +18,7 @@ import org.keycloak.common.crypto.CryptoIntegration;
 import org.keycloak.common.crypto.CryptoProvider;
 import org.keycloak.http.HttpRequest;
 
-public class EnvoyProxySslClientCertificateLookupTest {
+public class ClientCertificateLookupTest {
 
     private static EnvoyProxySslClientCertificateLookup envoyLookup = null;
 
