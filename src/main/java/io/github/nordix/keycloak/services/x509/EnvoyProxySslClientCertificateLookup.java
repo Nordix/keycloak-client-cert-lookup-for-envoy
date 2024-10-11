@@ -17,6 +17,9 @@ import java.util.StringTokenizer;
 import org.keycloak.http.HttpRequest;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
 
+/**
+ * Extracts the client certificate chain from the HTTP request forwarded by Envoy.
+ */
 public class EnvoyProxySslClientCertificateLookup implements X509ClientCertificateLookup {
 
     protected final static String XFCC_HEADER = "x-forwarded-client-cert";
@@ -30,10 +33,10 @@ public class EnvoyProxySslClientCertificateLookup implements X509ClientCertifica
     /**
      * Extracts the client certificate chain from the HTTP request forwarded by Envoy.
      *
-     * The Envoy XFCC header value is a comma (“,”) separated string.
+     * The Envoy XFCC header value is a comma (",") separated string.
      * Each substring is an XFCC element, which holds information added by a single proxy.
-     * Each XFCC element is a semicolon (“;”) separated list of key-value pairs.
-     * Each key-value pair is separated by an equal sign (“=”).
+     * Each XFCC element is a semicolon (";") separated list of key-value pairs.
+     * Each key-value pair is separated by an equal sign ("=").
      *
      * Example:
      *
@@ -43,7 +46,6 @@ public class EnvoyProxySslClientCertificateLookup implements X509ClientCertifica
      *
      * 1. Cert - The entire client certificate in URL encoded PEM format.
      * 2. Chain - The entire client certificate chain (including the leaf certificate) in URL encoded PEM format.
-     *
      *
      * For Envoy documentation, see
      * https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/headers#x-forwarded-client-cert
@@ -89,8 +91,10 @@ public class EnvoyProxySslClientCertificateLookup implements X509ClientCertifica
         return certs;
     }
 
+    /**
+     * Decodes the URL encoded value and removes enclosing quotes if present.
+     */
     private String decodeValue(String value) {
-        // Remove enclosing quotes if present.
         if (value.startsWith("\"") && value.endsWith("\"")) {
             value = value.substring(1, value.length() - 1);
         }

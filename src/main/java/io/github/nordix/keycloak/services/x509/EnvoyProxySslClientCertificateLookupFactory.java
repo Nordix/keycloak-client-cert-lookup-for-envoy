@@ -14,6 +14,9 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
 import org.keycloak.services.x509.X509ClientCertificateLookupFactory;
 
+/**
+ * Factory for creating EnvoyProxySslClientCertificateLookup instances.
+ */
 public class EnvoyProxySslClientCertificateLookupFactory implements X509ClientCertificateLookupFactory {
 
     private final static String PROVIDER = "envoy";
