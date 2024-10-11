@@ -32,7 +32,7 @@ import jakarta.ws.rs.core.Form;
 import jakarta.ws.rs.core.Response;
 
 /**
- * Integration tests that test the client certificate lookup functionality with Envoy and Keycloak.
+ * Integration tests with Envoy and Keycloak.
  */
 public class ClientCertificateLookupIT {
 
