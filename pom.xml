@@ -30,6 +30,7 @@
     <maven.deploy.plugin.version>3.1.2</maven.deploy.plugin.version>
     <maven.project-info-reports-plugin.version>3.1.2</maven.project-info-reports-plugin.version>
     <maven.failsafe.plugin.version>3.5.1</maven.failsafe.plugin.version>
+    <maven.checkstyle.plugin.version>3.5.0</maven.checkstyle.plugin.version>
 
   </properties>
 
@@ -139,8 +140,8 @@
       </plugins>
     </pluginManagement>
 
-    <!-- Integration test configuration -->
     <plugins>
+      <!-- Integration test configuration -->
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${maven.failsafe.plugin.version}</version>
@@ -160,6 +161,26 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- Checkstyle configuration -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${maven.checkstyle.plugin.version}</version>
+        <configuration>
+          <configLocation>.checkstyle.xml</configLocation>
+          <consoleOutput>true</consoleOutput>
+          <failsOnError>true</failsOnError>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
 
   </build>

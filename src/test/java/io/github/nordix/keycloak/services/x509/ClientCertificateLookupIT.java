@@ -12,6 +12,7 @@ import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyStore;
 
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -24,20 +25,27 @@ import org.keycloak.common.crypto.CryptoProvider;
 import fi.protonode.certy.Credential;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
-import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Form;
 import jakarta.ws.rs.core.Response;
 
+/**
+ * Integration tests that test the client certificate lookup functionality with Envoy and Keycloak.
+ */
 public class ClientCertificateLookupIT {
 
-    private static final String baseUrl = "https://keycloak.127.0.0.1.nip.io:8443";
-    private static final Logger logger = Logger.getLogger(ClientCertificateLookupIT.class);
+    private static final String BASE_URL = "https://keycloak.127.0.0.1.nip.io:8443";
+
+    private static Logger logger = Logger.getLogger(ClientCertificateLookupIT.class);
 
     private static String baseDir = System.getProperty("user.dir");
     private static Path targetDir = Paths.get(baseDir, "target/certs");
+
+    private static KeyStore serverCaStore;
+    private static KeyStore trustedClientStore;
+    private static KeyStore untrustedClientStore;
 
     private static Form form = new Form()
             .param("client_id", "xfcc-client")
@@ -81,6 +89,24 @@ public class ClientCertificateLookupIT {
 
             untrusted.writeCertificatesAsPem(targetDir.resolve("untrusted-client.pem"));
             untrusted.writePrivateKeyAsPem(targetDir.resolve("untrusted-client-key.pem"));
+
+            // Store certificates also to truststore and keystore for the test code to use.
+            serverCaStore = KeyStore.getInstance("PKCS12");
+            serverCaStore.load(null, null);
+            serverCaStore.setCertificateEntry("server-ca", serverCa.getCertificate());
+
+            trustedClientStore = KeyStore.getInstance("PKCS12");
+            trustedClientStore.load(null, null);
+            trustedClientStore.setCertificateEntry("client", client.getCertificate());
+            trustedClientStore.setKeyEntry("client", client.getPrivateKey(), "password".toCharArray(),
+                    new java.security.cert.Certificate[] { client.getCertificate() });
+
+            untrustedClientStore = KeyStore.getInstance("PKCS12");
+            untrustedClientStore.load(null, null);
+            untrustedClientStore.setCertificateEntry("untrusted-client", untrusted.getCertificate());
+            untrustedClientStore.setKeyEntry("untrusted-client", untrusted.getPrivateKey(), "password".toCharArray(),
+                    new java.security.cert.Certificate[] { untrusted.getCertificate() });
+
         } catch (Exception e) {
             throw new RuntimeException("Failed to create target directory", e);
         }
@@ -93,10 +119,10 @@ public class ClientCertificateLookupIT {
     @BeforeAll
     public static void waitForKeycloak() throws Exception {
         // Wait for Keycloak to be ready.
-        WebTarget target = client(targetDir.resolve("server-ca.pem")).target(baseUrl);
+        WebTarget target = ClientBuilder.newBuilder().trustStore(serverCaStore).build().target(BASE_URL);
 
         while (true) {
-            logger.infov("Checking Keycloak readiness: url={0}", baseUrl);
+            logger.infov("Checking Keycloak readiness: url={0}", BASE_URL);
 
             try {
                 Response response = target.request().get();
@@ -114,11 +140,10 @@ public class ClientCertificateLookupIT {
 
     @Test
     public void testAuthenticateWithCert() throws Exception {
-        WebTarget target = clientWithCredentials(
-                targetDir.resolve("server-ca.pem"),
-                targetDir.resolve("client.pem"),
-                targetDir.resolve("client-key.pem"))
-                .target(baseUrl + "/realms/xfcc/protocol/openid-connect/token");
+        WebTarget target = ClientBuilder.newBuilder()
+                .trustStore(serverCaStore)
+                .keyStore(trustedClientStore, "password")
+                .build().target(BASE_URL + "/realms/xfcc/protocol/openid-connect/token");
 
         Response response = target.request().post(Entity.form(form));
         String responseBody = response.readEntity(String.class);
@@ -129,29 +154,14 @@ public class ClientCertificateLookupIT {
 
     @Test
     public void testFailedAuthenticateWithCert() throws Exception {
-        Client client = clientWithCredentials(
-                targetDir.resolve("server-ca.pem"),
-                targetDir.resolve("untrusted-client.pem"),
-                targetDir.resolve("untrusted-client-key.pem"));
-
-        WebTarget target = client.target(baseUrl + "/realms/xfcc/protocol/openid-connect/token");
+        WebTarget target = ClientBuilder.newBuilder()
+                .trustStore(serverCaStore)
+                .keyStore(untrustedClientStore, "password")
+                .build().target(BASE_URL + "/realms/xfcc/protocol/openid-connect/token");
 
         Response response = target.request().post(Entity.form(form));
         String responseBody = response.readEntity(String.class);
         Assertions.assertEquals(401, response.getStatus(), "Was expecting 401 Unauthorized. Response=" + responseBody);
-    }
-
-    private static Client client(Path caPath) throws Exception {
-        return ClientBuilder.newBuilder()
-                .trustStore(CertificateUtils.loadTrustedCertificate(caPath))
-                .build();
-    }
-
-    private static Client clientWithCredentials(Path caPath, Path certPath, Path keyPath) throws Exception {
-        return ClientBuilder.newBuilder()
-                .trustStore(CertificateUtils.loadTrustedCertificate(caPath))
-                .keyStore(CertificateUtils.loadCredentials(certPath, keyPath, "password"), "password")
-                .build();
     }
 
 }

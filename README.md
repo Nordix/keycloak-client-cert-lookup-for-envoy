@@ -61,3 +61,9 @@ To run integration tests, use:
 ```
 ./mvnw clean verify
 ```
+
+To run checkstyle, use:
+
+```
+./mvnw checkstyle:check
+```
