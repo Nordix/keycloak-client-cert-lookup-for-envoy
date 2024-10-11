@@ -1,7 +1,7 @@
 # Keycloak X509 Client Certificate Lookup for Envoy
 
-This project provides an X509 client certificate lookup implementation for Envoy.
-It allows Keycloak to retrieve the client certificate from the `x-forwarded-client-cert` (XFCC) header set by [Envoy proxy](https://www.envoyproxy.io/) and use it for authorization.
+This project provides an X509 client certificate lookup implementation for [Envoy proxy](https://www.envoyproxy.io/).
+It allows Keycloak to retrieve the client certificate from the `x-forwarded-client-cert` (XFCC) header set by Envoy and use it for authorization.
 For more information, refer to [Keycloak's reverse proxy documentation](https://www.keycloak.org/server/reverseproxy) and the section [Enabling client certificate lookup](https://www.keycloak.org/server/reverseproxy#_enabling_client_certificate_lookup).
 See also [Envoy's documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/headers#x-forwarded-client-cert) on XFCC header.
 
