@@ -1,8 +1,3 @@
-<!-- Note for contributors: -->
-<!-- The images in this document are drawn in https://app.diagrams.net/. -->
-<!-- To edit the images in the editor to see the original vector diagram. -->
-<!-- When saving the updated diagram, remember include copy of the original diagram -->
-
 # Understanding Client Certificate Forwarding and Security Implications
 
 This document outlines the security implications and risks of enabling client certificate forwarding in reverse proxies.
@@ -13,9 +8,12 @@ However, in environments like Kubernetes, some clients may bypass the proxy, lea
 
 ## Overview
 
-`x-forwarded-client-cert` (XFCC) is a proxy header which indicates certificate information of the client, determined by Envoy when terminating the external TLS connection established by the client.
-Envoy terminates the TLS connection and validates the client certificate.
-If the certificate is valid, Envoy forwards the certificate information to the backend service, such as Keycloak, in the XFCC header.
+The `x-forwarded-client-cert` (XFCC) header is used by Envoy proxy to send the client certificate information to the backend service, such as Keycloak.
+When Envoy terminates an external TLS connection initiated by a client, it performs a TLS handshake.
+During this handshake, the client can present a client certificate.
+Envoy verifies that the client possesses the corresponding private key and validates the certificate.
+After successful validation, Envoy forwards the certificate to the backend service via the XFCC header.
+Keycloak then uses the certificate for authorization purposes.
 
 ![image](assets/xfcc-intro.drawio.svg)
 
@@ -33,7 +31,7 @@ Pre-conditions:
 Scenario:
 
 Authentication fails because the SPI implementation expects the identity from the XFCC header, which is not set for internal clients.
-Therefore, the client certificate is not retrieved from the TLS connection.
+The client certificate information from the TLS layer is not used.
 
 ![image](assets/xfcc-scenario-1.drawio.svg)
 
