@@ -16,7 +16,7 @@ spec:
   virtualhost:
     fqdn: keycloak.127-0-0-121.nip.io
     tls:
-      secretName: keycloak-external
+      secretName: keycloak-server-cert
       clientValidation:
         caSecret: client-ca
         optionalClientCertificate: true
@@ -57,7 +57,7 @@ spec:
       protocol: HTTPS
     tls:
       mode: OPTIONAL_MUTUAL
-      credentialName: keycloak-external
+      credentialName: keycloak-server-cert
     hosts:
     - "*"
 ```
@@ -68,7 +68,7 @@ spec:
 To configure a client with the X509 authenticator, create a new client with the following settings:
 
 1. In the "General settings" step, fill in:
-    - Set the Client ID name, for example: `x509test`
+    - Set the Client ID name, for example: `xfcc-client`
 2. In the "Capabilicy config" step, fill in:
     - Client Authentication: On
     - Select "Service accounts roles"
@@ -82,7 +82,7 @@ Enable the X509 authenticator:
 Make an HTTP request with the client certificate:
 
 ```console
-$ http --cert certs/x509client.pem --cert-key certs/x509client-key.pem --verify certs/ca.pem --form POST https://keycloak.127-0-0-1.nip.io:8443/realms/master/protocol/openid-connect/token grant_type=client_credentials client_id=x509test
+$ http --cert target/certs/client.pem --cert-key target/certs/client-key.pem --verify target/certs/server-ca.pem --form POST https://keycloak.127.0.0.1.nip.io:8443/realms/xfcc/protocol/openid-connect/token grant_type=client_credentials client_id=xfcc-client
 HTTP/1.1 200 OK
 cache-control: no-store
 content-length: 1412

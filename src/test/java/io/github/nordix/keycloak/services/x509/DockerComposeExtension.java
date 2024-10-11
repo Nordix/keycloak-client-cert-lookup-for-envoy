@@ -16,6 +16,9 @@ import java.nio.file.Path;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 
+/**
+ * JUnit extension for starting and stopping Docker Compose.
+ */
 public class DockerComposeExtension implements BeforeAllCallback, AfterAllCallback {
 
     private static final String DOCKER_COMPOSE_UP = "docker compose up --force-recreate --detach";
@@ -32,7 +35,7 @@ public class DockerComposeExtension implements BeforeAllCallback, AfterAllCallba
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
         run(DOCKER_COMPOSE_UP, "Failed to start Docker Compose.");
-        logger.info("Use the following command to see the logs \"docker compose logs -f\"");
+        logger.info("To see logs, run 'docker compose logs -f'");
     }
 
     @Override
