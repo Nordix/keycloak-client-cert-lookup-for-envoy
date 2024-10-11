@@ -1,16 +1,17 @@
-# Keycloak X509 Client Certificate Lookup SPI for Envoy
+# Keycloak X509 Client Certificate Lookup for Envoy
 
-This project provides an X509 client certificate lookup SPI for Keycloak.
-It allows Keycloak to retrieve the client certificate from the `x-forwarded-client-cert` (XFCC) header set by [Envoy proxy](https://www.envoyproxy.io/) and use it for authentication.
+This project provides an X509 client certificate lookup implementation for Envoy.
+It allows Keycloak to retrieve the client certificate from the `x-forwarded-client-cert` (XFCC) header set by [Envoy proxy](https://www.envoyproxy.io/) and use it for authorization.
 For more information, refer to [Keycloak's reverse proxy documentation](https://www.keycloak.org/server/reverseproxy) and the section [Enabling client certificate lookup](https://www.keycloak.org/server/reverseproxy#_enabling_client_certificate_lookup).
-
-Why this project? The extension was submitted as a pull request [keycloak#33159](https://github.com/keycloak/keycloak/pull/33159), but client certificate lookup implementations for new proxies are no longer accepted.
-Instead, implementations are encouraged to be developed as extensions.
+See also [Envoy's documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/headers#x-forwarded-client-cert) on XFCC header.
 
 See [Configuring Kubernetes Ingress Controllers for Client Certificate Forwarding](docs/ingress-controllers.md) for more information on how to configure Kubernetes ingress controllers for client certificate forwarding.
 
 > ⚠️ **Alert:** There are implications that you should be aware of when enabling client certificate lookup in Keycloak.
 For more information, see [Understanding Client Certificate Forwarding and Security Implications](docs/security-and-client-cert-forwarding.md).
+
+This project was created because the code submitted in [keycloak#33159](https://github.com/keycloak/keycloak/pull/33159) was not accepted.
+Instead, Keycloak encourages the development of implementations for different proxies as extensions.
 
 ## Installation
 
@@ -38,8 +39,8 @@ You will see a warning in the logs when the JAR file is loaded:
 2024-10-11 09:15:29,052 WARN  [org.key.services] (build-13) KC-SERVICES0047: envoy (io.github.nordix.keycloak.services.x509.EnvoyProxySslClientCertificateLookupFactory) is implementing the internal SPI x509cert-lookup. This SPI is internal and may change without notice
 ```
 
-This warning is expected.
-Since the X509 client certificate lookup SPI is not stable across Keycloak versions, this project may require updates for newer Keycloak versions.
+This warning is expected, since the X509 client certificate lookup SPI is not guaranteed to be stable across Keycloak versions.
+This project may require updates for newer Keycloak versions.
 
 Refer to Keycloak's [Configuring Providers](https://www.keycloak.org/server/configuration-provider) documentation for more information.
 
