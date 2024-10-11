@@ -18,9 +18,10 @@ import org.junit.jupiter.api.extension.AfterAllCallback;
 
 public class DockerComposeExtension implements BeforeAllCallback, AfterAllCallback {
 
-    private static final Logger logger = Logger.getLogger(DockerComposeExtension.class);
     private static final String DOCKER_COMPOSE_UP = "docker compose up --force-recreate --detach";
     private static final String DOCKER_COMPOSE_DOWN = "docker compose down";
+
+    private static Logger logger = Logger.getLogger(DockerComposeExtension.class);
 
     private final String basePath;
 

@@ -13,6 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Utility class for PEM encoded certificates.
+ */
 public class PemUtils {
 
     public static final String END_CERT = "-----END CERTIFICATE-----";
