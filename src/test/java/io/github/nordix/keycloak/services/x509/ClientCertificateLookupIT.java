@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -120,6 +122,8 @@ public class ClientCertificateLookupIT {
     public static void waitForKeycloak() throws Exception {
         // Wait for Keycloak to be ready.
         WebTarget target = ClientBuilder.newBuilder().trustStore(serverCaStore).build().target(BASE_URL);
+        Instant startTime = Instant.now();
+        Duration timeout = Duration.ofMinutes(5);
 
         while (true) {
             logger.infov("Checking Keycloak readiness: url={0}", BASE_URL);
@@ -134,6 +138,11 @@ public class ClientCertificateLookupIT {
             } catch (Exception e) {
                 logger.infov("Cannot connect: {0}", e.getMessage());
             }
+
+            if (Duration.between(startTime, Instant.now()).compareTo(timeout) > 0) {
+                throw new RuntimeException("Keycloak did not start in time");
+            }
+
             Thread.sleep(2500);
         }
     }
