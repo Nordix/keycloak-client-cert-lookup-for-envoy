@@ -157,6 +157,9 @@
                 <java.util.logging.config.file>
                   ${project.basedir}/src/test/resources/logging.properties</java.util.logging.config.file>
               </systemPropertyVariables>
+              <environmentVariables>
+                <KEYCLOAK_VERSION>${keycloak.version}</KEYCLOAK_VERSION>
+              </environmentVariables>
             </configuration>
           </execution>
         </executions>
