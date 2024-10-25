@@ -19,7 +19,13 @@ services:
       - -cxe
       - |
         /opt/keycloak/bin/kc.sh import --file /input/src/test/resources/integration-test/keycloak-realm.json
-        /opt/keycloak/bin/kc.sh start --spi-x509cert-lookup-provider=envoy
+        /opt/keycloak/bin/kc.sh start \
+          --log-level=INFO,io.github.nordix.keycloak.services.x509:debug \
+          --spi-x509cert-lookup-provider=envoy \
+          --https-certificate-file=/input/target/certs/keycloak.pem \
+          --https-certificate-key-file=/input/target/certs/keycloak-key.pem \
+          --truststore-paths=/input/target/certs/client-ca.pem
+        #  --spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=envoy-client" ]]' \
 
     environment:
       - KEYCLOAK_ADMIN=admin
@@ -30,3 +36,7 @@ services:
     volumes:
       - ./:/input:ro
       - ./target/keycloak-client-cert-lookup-for-envoy-1.0-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-client-cert-lookup-for-envoy.jar:ro
+
+    # Expose Keycloak's HTTPS port to allow test suite to do direct requests.
+    ports:
+      - "10443:8443"

@@ -21,6 +21,7 @@
     <junit.jupiter.version>5.11.3</junit.jupiter.version>
     <jboss.resteasy.version>6.2.10.Final</jboss.resteasy.version>
     <certy.version>0.4.0</certy.version>
+    <apache.commons.exec.version>1.4.0</apache.commons.exec.version>
     <maven.clean.plugin.version>3.4.0</maven.clean.plugin.version>
     <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
     <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
@@ -84,6 +85,12 @@
       <groupId>fi.protonode</groupId>
       <artifactId>certy</artifactId>
       <version>${certy.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-exec</artifactId>
+      <version>${apache.commons.exec.version}</version>
       <scope>test</scope>
     </dependency>
 
