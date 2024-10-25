@@ -45,6 +45,37 @@ This project may require updates for newer Keycloak versions.
 Refer to Keycloak's [Configuring Providers](https://www.keycloak.org/server/configuration-provider) documentation for more information.
 
 
+## Configuration
+
+### Authorizing clients that are allowed to send XFCC headers
+
+If Keycloak is deployed in environment where not all requests are forwarded via the proxy, it is important to ensure that only requests from the proxy are allowed to send XFCC headers.
+This is to prevent clients running inside the perimeter of the proxy from impersonating users.
+The prerequisite for this is that the proxy uses TLS and client certificate authentication for the connection to Keycloak.
+When the TLS connection is established, Keycloak will verify the client certificate, including the the certificate chain against trusted CAs.
+After successful verification, the request is sent to Envoy Client certificate lookup SPI, which then uses the certificate chain information to authorize the use of XFCC headers.
+
+The authorization is configured by specifying the expected list of X509 subject names in the client certificate chain:
+
+```
+--spi-x509cert-lookup-envoy-cert-path-verify="[ [ <leaf-cert>, <intermediate-cert>, ... ], ... ]"
+```
+
+The configuration is a JSON array of arrays.
+Multiple chains of subject names can be specified in the configuration.
+Each inner array represents a certificate chain, where the first element is the subject name of the leaf certificate and the following elements are for the intermediate certificates.
+Root certificate is not included in the configuration.
+
+For example, to allow the client certificate chain with the subject name `CN=envoy, O=example.com` and the intermediate certificate with the subject name `CN=intermediate, O=example.com`, use the following configuration:
+
+```
+--spi-x509cert-lookup-envoy-cert-path-verify='[["CN=envoy, O=example.com", "CN=intermediate, O=example.com"]]'
+```
+
+If the parameter is not set, the client certificate chain is not verified and all requests with XFCC headers are allowed.
+
+
+
 ## Development
 
 This section is for developers who wish to contribute to the project.

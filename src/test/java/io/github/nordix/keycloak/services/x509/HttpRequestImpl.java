@@ -23,6 +23,7 @@ import jakarta.ws.rs.core.UriInfo;
 public class HttpRequestImpl implements HttpRequest {
 
     private org.jboss.resteasy.spi.HttpRequest delegate;
+    private X509Certificate[] clientCertificateChain;
 
     public HttpRequestImpl(org.jboss.resteasy.spi.HttpRequest delegate) {
         this.delegate = delegate;
@@ -50,7 +51,7 @@ public class HttpRequestImpl implements HttpRequest {
 
     @Override
     public X509Certificate[] getClientCertificateChain() {
-        throw new UnsupportedOperationException("Unimplemented method 'getClientCertificateChain'");
+        return clientCertificateChain;
     }
 
     @Override
@@ -58,4 +59,8 @@ public class HttpRequestImpl implements HttpRequest {
         throw new UnsupportedOperationException("Unimplemented method 'getUri'");
     }
 
+    public HttpRequestImpl setClientCertificateChain(X509Certificate[] clientCertificateChain) {
+        this.clientCertificateChain = clientCertificateChain;
+        return this;
+    }
 }

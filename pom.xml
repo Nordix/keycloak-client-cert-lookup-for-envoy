@@ -117,6 +117,8 @@
           <configuration>
             <systemPropertyVariables>
               <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+              <java.util.logging.config.file>
+                ${project.basedir}/src/test/resources/logging.properties</java.util.logging.config.file>
             </systemPropertyVariables>
           </configuration>
         </plugin>
@@ -141,7 +143,7 @@
     </pluginManagement>
 
     <plugins>
-      <!-- Integration test configuration -->
+      <!-- Integration test -->
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${maven.failsafe.plugin.version}</version>
@@ -165,7 +167,7 @@
         </executions>
       </plugin>
 
-      <!-- Checkstyle configuration -->
+      <!-- Checkstyle -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>

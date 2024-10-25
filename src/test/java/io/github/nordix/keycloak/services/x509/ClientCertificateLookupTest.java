@@ -17,20 +17,21 @@ import org.junit.jupiter.api.Test;
 import org.keycloak.common.crypto.CryptoIntegration;
 import org.keycloak.common.crypto.CryptoProvider;
 import org.keycloak.http.HttpRequest;
+import org.keycloak.services.x509.X509ClientCertificateLookup;
 
 /**
  * Unit tests for EnvoyProxySslClientCertificateLookup.
  */
 public class ClientCertificateLookupTest {
 
-    private static EnvoyProxySslClientCertificateLookup envoyLookup = null;
+    private static X509ClientCertificateLookup envoyLookup = null;
 
     @BeforeAll
     public static void setup() {
         // Initialize the Keycloak default crypto provider.
         CryptoIntegration.init(CryptoProvider.class.getClassLoader());
-
-        envoyLookup = new EnvoyProxySslClientCertificateLookup();
+        EnvoyProxySslClientCertificateLookupFactory factory = new EnvoyProxySslClientCertificateLookupFactory();
+        envoyLookup = factory.create(null);
     }
 
     @Test
