@@ -13,6 +13,7 @@ import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.jboss.logging.Logger;
 import org.keycloak.Config.Scope;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -33,14 +34,17 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
  */
 public class EnvoyProxySslClientCertificateLookupFactory implements X509ClientCertificateLookupFactory {
 
+    private static Logger logger = Logger.getLogger(EnvoyProxySslClientCertificateLookupFactory.class);
+
     private final static String PROVIDER = "envoy";
 
     private List<List<X500Principal>> validCertPaths;
 
     @Override
     public void init(Scope config) {
-        String pathsJson = config.get("cert-paths");
+        String pathsJson = config.get("cert-path-verify");
         if (pathsJson != null) {
+            logger.debugv("Client certificate path validation configured: {0}", pathsJson);
             ObjectMapper mapper = new ObjectMapper();
             SimpleModule module = new SimpleModule();
             module.addDeserializer(X500Principal.class, new X500PrincipalDeserializer());

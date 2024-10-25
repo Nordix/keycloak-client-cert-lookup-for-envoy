@@ -40,7 +40,8 @@ public class PathValidationTest {
         // Initialize the Keycloak default crypto provider.
         CryptoIntegration.init(CryptoProvider.class.getClassLoader());
 
-        // Certs used for Envoy->Keycloak the perimeter of the Envoy proxy, e.g. Kubernetes cluster-internal PKI.
+        // Certs used for Envoy->Keycloak the perimeter of the Envoy proxy, e.g.
+        // Kubernetes cluster-internal PKI.
         Credential internalRootCa = new Credential().subject("CN=internal root CA");
         Credential internalSubCa = new Credential().subject("CN=internal sub CA").ca(true).issuer(internalRootCa);
         envoy1 = new Credential().subject("CN=Envoy 1,OU=clients,O=example.com").ca(false).issuer(internalSubCa);
@@ -55,6 +56,10 @@ public class PathValidationTest {
                 .issuer(externalSubCa);
     }
 
+    /**
+     * Test that the client certificate chain is extracted from XFCC header when
+     * request is over TLS and client certificate matches with the expected path.
+     */
     @Test
     public void testTlsRequestWithXfccFromAuthorizedProxy() throws Exception {
         X509ClientCertificateLookup lookup = createLookupWithConfig("[[\"O=example.com,OU=clients,CN=Envoy 1\"]]");
@@ -73,6 +78,11 @@ public class PathValidationTest {
         Assertions.assertArrayEquals(client1.getCertificates(), certs);
     }
 
+    /**
+     * Test that the client certificate chain is not extracted from XFCC header when
+     * request is over TLS and client certificate does not match with the expected
+     * path.
+     */
     @Test
     public void testTlsRequestWithXfccFromUnauthorizedProxy() throws Exception {
         X509ClientCertificateLookup lookup = createLookupWithConfig("[[\"CN=does not match\"]]");
@@ -90,6 +100,11 @@ public class PathValidationTest {
         Assertions.assertArrayEquals(envoy1.getCertificates(), certs);
     }
 
+    /**
+     * Test that the client certificate chain is not extracted from XFCC header when
+     * the request is not over TLS and the configuration requires certificate path
+     * validation.
+     */
     @Test
     public void testNonTlsRequestWithXfcc() throws Exception {
         X509ClientCertificateLookup lookup = createLookupWithConfig("[[\"O=example.com,OU=clients,CN=Envoy 1\"]]");
@@ -103,6 +118,11 @@ public class PathValidationTest {
         Assertions.assertNull(certs);
     }
 
+    /**
+     * Test that the client certificate chain is extracted from XFCC header when
+     * request is over TLS and client certificate matches with one of multiple
+     * expected paths.
+     */
     @Test
     public void testTlsRequestWithXfccMultipleAllowedProxies() throws Exception {
         X509ClientCertificateLookup lookup = createLookupWithConfig(
@@ -135,8 +155,11 @@ public class PathValidationTest {
         Assertions.assertArrayEquals(client2.getCertificates(), certs);
     }
 
+
+    // Helper methods.
+
     private static X509ClientCertificateLookup createLookupWithConfig(String configJson) {
-        Scope config = ScopeImpl.fromPairs("cert-paths", configJson);
+        Scope config = ScopeImpl.fromPairs("cert-path-verify", configJson);
         EnvoyProxySslClientCertificateLookupFactory factory = new EnvoyProxySslClientCertificateLookupFactory();
         factory.init(config);
         return factory.create(null);
@@ -144,10 +167,13 @@ public class PathValidationTest {
 
     private static X509Certificate[] getCertificateChain(Credential cred)
             throws CertificateException, NoSuchAlgorithmException {
-        return Arrays.stream(cred.getCertificates()).map(cert -> (X509Certificate) cert).toArray(X509Certificate[]::new);
+        return Arrays.stream(cred.getCertificates()).map(cert -> (X509Certificate) cert)
+                .toArray(X509Certificate[]::new);
     }
 
-    private static String getXfccValue(Credential cred) throws CertificateException, NoSuchAlgorithmException, IOException {
-        return String.format("Hash=1234;Cert=\"%s\"", URLEncoder.encode(cred.getCertificatesAsPem(), StandardCharsets.UTF_8));
+    private static String getXfccValue(Credential cred)
+            throws CertificateException, NoSuchAlgorithmException, IOException {
+        return String.format("Hash=1234;Cert=\"%s\"",
+                URLEncoder.encode(cred.getCertificatesAsPem(), StandardCharsets.UTF_8));
     }
 }
