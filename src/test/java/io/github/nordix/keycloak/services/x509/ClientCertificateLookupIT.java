@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Assertions;
@@ -53,65 +54,79 @@ public class ClientCertificateLookupIT {
             .param("client_id", "xfcc-client")
             .param("grant_type", "client_credentials");
 
-    // Generate certificates before running docker compose.
     static {
         try {
             // Initialize the Keycloak default crypto provider.
             CryptoIntegration.init(CryptoProvider.class.getClassLoader());
 
-            // Generate certificates.
-            logger.info("Generating certificates...");
-
-            Credential serverCa = new Credential().subject("CN=server-ca");
-            Credential keycloak = new Credential().subject("CN=keycloak")
-                    .issuer(serverCa)
-                    .subjectAltName("DNS:keycloak.127.0.0.1.nip.io");
-
-            Credential clientCa = new Credential().subject("CN=client-ca");
-            Credential client = new Credential().subject("CN=client")
-                    .issuer(clientCa);
-
-            Credential untrustedCa = new Credential().subject("CN=untrusted-ca");
-            Credential untrusted = new Credential().subject("CN=untrusted-client")
-                    .issuer(untrustedCa);
-
-            // Save certificates to disk for Envoy container to use.
-            if (!Files.exists(targetDir)) {
-                Files.createDirectories(targetDir);
-            }
-
-            serverCa.writeCertificatesAsPem(targetDir.resolve("server-ca.pem"));
-            clientCa.writeCertificatesAsPem(targetDir.resolve("client-ca.pem"));
-
-            keycloak.writeCertificatesAsPem(targetDir.resolve("keycloak.pem"));
-            keycloak.writePrivateKeyAsPem(targetDir.resolve("keycloak-key.pem"));
-
-            client.writeCertificatesAsPem(targetDir.resolve("client.pem"));
-            client.writePrivateKeyAsPem(targetDir.resolve("client-key.pem"));
-
-            untrusted.writeCertificatesAsPem(targetDir.resolve("untrusted-client.pem"));
-            untrusted.writePrivateKeyAsPem(targetDir.resolve("untrusted-client-key.pem"));
-
-            // Store certificates also to truststore and keystore for the test code to use.
-            serverCaStore = KeyStore.getInstance("PKCS12");
-            serverCaStore.load(null, null);
-            serverCaStore.setCertificateEntry("server-ca", serverCa.getCertificate());
-
-            trustedClientStore = KeyStore.getInstance("PKCS12");
-            trustedClientStore.load(null, null);
-            trustedClientStore.setCertificateEntry("client", client.getCertificate());
-            trustedClientStore.setKeyEntry("client", client.getPrivateKey(), "password".toCharArray(),
-                    new java.security.cert.Certificate[] { client.getCertificate() });
-
-            untrustedClientStore = KeyStore.getInstance("PKCS12");
-            untrustedClientStore.load(null, null);
-            untrustedClientStore.setCertificateEntry("untrusted-client", untrusted.getCertificate());
-            untrustedClientStore.setKeyEntry("untrusted-client", untrusted.getPrivateKey(), "password".toCharArray(),
-                    new java.security.cert.Certificate[] { untrusted.getCertificate() });
-
+            generateCertificates();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create target directory", e);
+            throw new RuntimeException("Failed to create certificates", e);
         }
+    }
+
+    /**
+     * Generate certificates.
+     *
+     * Note:
+     * Certificates are needed before running docker compose since Keycloak and Envoy will pick them up only at startup.
+     */
+    private static void generateCertificates() throws Exception {
+        logger.info("Generating certificates...");
+
+        if (!Files.exists(targetDir)) {
+            Files.createDirectories(targetDir);
+        }
+
+        Credential serverCa = new Credential().subject("CN=server-ca");
+        Credential clientCa = new Credential().subject("CN=client-ca");
+        Credential untrustedCa = new Credential().subject("CN=untrusted-ca");
+
+        serverCa.writeCertificatesAsPem(targetDir.resolve("server-ca.pem"));
+        clientCa.writeCertificatesAsPem(targetDir.resolve("client-ca.pem"));
+
+        new Credential().subject("CN=keycloak")
+                .issuer(serverCa)
+                .subjectAltNames(Arrays.asList(
+                        "DNS:keycloak.127.0.0.1.nip.io", "DNS:keycloak-https.127.0.0.1.nip.io"))
+                .writeCertificatesAsPem(targetDir.resolve("keycloak.pem"))
+                .writePrivateKeyAsPem(targetDir.resolve("keycloak-key.pem"));
+
+        Credential client = new Credential().subject("CN=client")
+                .issuer(clientCa)
+                .writeCertificatesAsPem(targetDir.resolve("client.pem"))
+                .writePrivateKeyAsPem(targetDir.resolve("client-key.pem"));
+
+        Credential untrusted = new Credential().subject("CN=untrusted-client")
+                .issuer(untrustedCa)
+                .writeCertificatesAsPem(targetDir.resolve("untrusted-client.pem"))
+                .writePrivateKeyAsPem(targetDir.resolve("untrusted-client-key.pem"));
+
+        new Credential().subject("CN=authorized-client").issuer(clientCa)
+                .writeCertificatesAsPem(targetDir.resolve("authorized-client.pem"))
+                .writePrivateKeyAsPem(targetDir.resolve("authorized-client-key.pem"));
+
+        new Credential().subject("CN=unauthorized-client")
+                .issuer(clientCa)
+                .writeCertificatesAsPem(targetDir.resolve("unauthorized-client.pem"))
+                .writePrivateKeyAsPem(targetDir.resolve("unauthorized-client-key.pem"));
+
+        // Store certificates also to truststore and keystore for the test code to use.
+        serverCaStore = KeyStore.getInstance("PKCS12");
+        serverCaStore.load(null, null);
+        serverCaStore.setCertificateEntry("server-ca", serverCa.getCertificate());
+
+        trustedClientStore = KeyStore.getInstance("PKCS12");
+        trustedClientStore.load(null, null);
+        trustedClientStore.setCertificateEntry("client", client.getCertificate());
+        trustedClientStore.setKeyEntry("client", client.getPrivateKey(), "password".toCharArray(),
+                new java.security.cert.Certificate[] { client.getCertificate() });
+
+        untrustedClientStore = KeyStore.getInstance("PKCS12");
+        untrustedClientStore.load(null, null);
+        untrustedClientStore.setCertificateEntry("untrusted-client", untrusted.getCertificate());
+        untrustedClientStore.setKeyEntry("untrusted-client", untrusted.getPrivateKey(), "password".toCharArray(),
+                new java.security.cert.Certificate[] { untrusted.getCertificate() });
 
     }
 
