@@ -26,7 +26,7 @@ services:
           --https-trust-store-password=password \
           --https-client-auth=request \
           --spi-x509cert-lookup-provider=envoy \
-          --spi-x509cert-lookup-envoy-cert-path-verify='[[\"CN=authorized-client\"]]' \
+          --spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=authorized-client" ]]' \
           --log-level=INFO,io.github.nordix.keycloak.services.x509:debug
 
     # Notes:
