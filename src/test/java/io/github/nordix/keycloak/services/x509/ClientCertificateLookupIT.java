@@ -8,7 +8,6 @@
  */
 package io.github.nordix.keycloak.services.x509;
 
-import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,9 +24,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.keycloak.common.crypto.CryptoIntegration;
 import org.keycloak.common.crypto.CryptoProvider;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import fi.protonode.certy.Credential;
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
@@ -172,8 +172,10 @@ public class ClientCertificateLookupIT {
         Response response = target.request().post(Entity.form(form));
         String responseBody = response.readEntity(String.class);
         Assertions.assertEquals(200, response.getStatus(), "Failed to fetch token. Response=" + responseBody);
-        JsonObject obj = Json.createReader(new StringReader(responseBody)).readObject();
-        Assertions.assertTrue(obj.containsKey("access_token"), "Response does not contain access_token");
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode obj = mapper.readTree(responseBody);
+        Assertions.assertTrue(obj.has("access_token"), "Response does not contain access_token");
     }
 
     @Test
