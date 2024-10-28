@@ -128,6 +128,13 @@ public class ClientCertificateLookupIT {
         untrustedClientStore.setKeyEntry("untrusted-client", untrusted.getPrivateKey(), "password".toCharArray(),
                 new java.security.cert.Certificate[] { untrusted.getCertificate() });
 
+
+        // Create a truststore for old Keycloak versions that do not support PEM and write it to a file.
+        KeyStore truststoreForClientVerification = KeyStore.getInstance("PKCS12");
+        truststoreForClientVerification.load(null, null);
+        truststoreForClientVerification.setCertificateEntry("client-ca", clientCa.getCertificate());
+        truststoreForClientVerification.store(Files.newOutputStream(targetDir.resolve("client-ca-truststore.p12")),
+                "password".toCharArray());
     }
 
     @RegisterExtension

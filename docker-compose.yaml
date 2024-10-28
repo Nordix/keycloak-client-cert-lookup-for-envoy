@@ -20,12 +20,31 @@ services:
       - |
         /opt/keycloak/bin/kc.sh import --file /input/src/test/resources/integration-test/keycloak-realm.json
         /opt/keycloak/bin/kc.sh start \
-          --log-level=INFO,io.github.nordix.keycloak.services.x509:debug \
-          --spi-x509cert-lookup-provider=envoy \
           --https-certificate-file=/input/target/certs/keycloak.pem \
           --https-certificate-key-file=/input/target/certs/keycloak-key.pem \
-          --truststore-paths=/input/target/certs/client-ca.pem
-        #  --spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=envoy-client" ]]' \
+          --https-trust-store-file=/input/target/certs/client-ca-truststore.p12 \
+          --https-trust-store-password=password \
+          --https-client-auth=request \
+          --spi-x509cert-lookup-provider=envoy \
+          --spi-x509cert-lookup-envoy-cert-path-verify='[[\"CN=authorized-client\"]]' \
+          --log-level=INFO,io.github.nordix.keycloak.services.x509:debug
+
+    # Notes:
+    #
+    # - Kecyloak 22 does not support
+    #     --spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=envoy-client" ]]'
+    #   The parameter must be quoted as follows::
+    #     --spi-x509cert-lookup-envoy-cert-path-verify='[[\"CN=authorized-client\"]]'
+    #
+    #   This is possibly related to https://github.com/keycloak/keycloak/pull/22585
+    #
+    # - Keycloak 22 does not support PEM format for
+    #     --https-trust-store-file=/input/target/certs/client-ca.pem
+    #   even though following guide indicated it should work
+    #     https://www.keycloak.org/nightly/server/mutual-tls#_using_a_dedicated_truststore_for_mtls
+    #
+    #   Keycloak 26 and newer suppport also following
+    #     --truststore-paths=/input/target/certs/client-ca.pem
 
     environment:
       - KEYCLOAK_ADMIN=admin
