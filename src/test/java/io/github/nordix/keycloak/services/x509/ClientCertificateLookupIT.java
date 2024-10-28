@@ -39,7 +39,7 @@ import jakarta.ws.rs.core.Response;
  */
 public class ClientCertificateLookupIT {
 
-    private static final String BASE_URL = "https://keycloak.127.0.0.1.nip.io:8443";
+    private static final String BASE_URL = "https://keycloak-https.127.0.0.1.nip.io:8443";
 
     private static Logger logger = Logger.getLogger(ClientCertificateLookupIT.class);
 
