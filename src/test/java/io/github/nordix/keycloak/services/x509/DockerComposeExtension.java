@@ -36,8 +36,8 @@ public class DockerComposeExtension implements BeforeAllCallback, AfterAllCallba
     }
 
     /**
-     * Start Docker Compose before all tests but do not wait for it to complete.
-     * That allows the logs to be displayed in the console in parallel with the test execution.
+     * Start Docker Compose before all tests but do not wait for it to complete. That allows the logs to be displayed in
+     * the console in parallel with the test execution.
      */
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
@@ -55,9 +55,8 @@ public class DockerComposeExtension implements BeforeAllCallback, AfterAllCallba
     /**
      * Run a command on a subprocess.
      *
-     * Note:
-     * Use apache-commons-exec since ProcessBuilder had problems with output redirection
-     * (output stopped in the middle even if the process was still running).
+     * Note: Use apache-commons-exec since ProcessBuilder had problems with output redirection (output stopped in the
+     * middle even if the process was still running).
      */
     private void run(String command, boolean waitForCompletion, String errorMessage) throws Exception {
         CommandLine cmdLine = CommandLine.parse(command);

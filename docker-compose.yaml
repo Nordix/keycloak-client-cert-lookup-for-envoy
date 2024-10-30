@@ -14,21 +14,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
 
-    entrypoint: /bin/bash
-    command:
-      - -cxe
-      - |
-        /opt/keycloak/bin/kc.sh import --file /input/src/test/resources/integration-test/keycloak-realm.json
-        /opt/keycloak/bin/kc.sh start \
-          --https-certificate-file=/input/target/certs/keycloak.pem \
-          --https-certificate-key-file=/input/target/certs/keycloak-key.pem \
-          --https-trust-store-file=/input/target/certs/client-ca-truststore.p12 \
-          --https-trust-store-password=password \
-          --https-client-auth=request \
-          --spi-x509cert-lookup-provider=envoy \
-          --spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=authorized-client" ]]' \
-          --log-level=INFO,io.github.nordix.keycloak.services.x509:debug
-
+    #
     # Notes:
     #
     # - Kecyloak 22 does not support
@@ -45,6 +31,22 @@ services:
     #
     #   Keycloak 26 and newer suppport also following
     #     --truststore-paths=/input/target/certs/client-ca.pem
+    #
+
+    entrypoint: /bin/bash
+    command:
+      - -cxe
+      - |
+        /opt/keycloak/bin/kc.sh import --file /input/src/test/resources/integration-test/keycloak-realm.json
+        /opt/keycloak/bin/kc.sh start \
+          --https-certificate-file=/input/target/certs/keycloak.pem \
+          --https-certificate-key-file=/input/target/certs/keycloak-key.pem \
+          --https-trust-store-file=/input/target/certs/client-ca-truststore.p12 \
+          --https-trust-store-password=password \
+          --https-client-auth=request \
+          --spi-x509cert-lookup-provider=envoy \
+          --spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=envoy-client" ]]' \
+          --log-level=INFO,io.github.nordix.keycloak.services.x509:debug
 
     environment:
       - KEYCLOAK_ADMIN=admin
@@ -58,4 +60,5 @@ services:
 
     # Expose Keycloak's HTTPS port to allow test suite to do direct requests.
     ports:
+      - "10080:8080"
       - "10443:8443"

@@ -23,54 +23,113 @@ import org.keycloak.http.HttpRequest;
 import org.keycloak.services.x509.X509ClientCertificateLookup;
 
 /**
+ * Envoy X509 client certificate lookup.
+ *
  * Extracts the client certificate chain from the HTTP request forwarded by Envoy.
  */
 public class EnvoyProxySslClientCertificateLookup implements X509ClientCertificateLookup {
 
     private static Logger logger = Logger.getLogger(EnvoyProxySslClientCertificateLookup.class);
 
-    protected final static String XFCC_HEADER = "x-forwarded-client-cert";
-    protected final static String XFCC_HEADER_CERT_KEY = "Cert";
-    protected final static String XFCC_HEADER_CHAIN_KEY = "Chain";
+    protected static final String XFCC_HEADER = "x-forwarded-client-cert";
+    protected static final String XFCC_HEADER_CERT_KEY = "Cert";
+    protected static final String XFCC_HEADER_CHAIN_KEY = "Chain";
 
     // Each element in the list is a list of subject names expected in the client certificate chain.
     // <leaf certificate subject, intermediate certificate subject, ...>
-    private List<List<X500Principal>> validCertPaths = null;
+    private List<List<X500Principal>> verifyCertPaths = null;
 
-    /**
-     * Constructor for creating an instance of EnvoyProxySslClientCertificateLookup.
-     */
-    public EnvoyProxySslClientCertificateLookup() {
-    }
-
-    /**
-     * Constructor for creating an instance of EnvoyProxySslClientCertificateLookup.
-     *
-     * @param validCertPaths The certificate paths to validate the client certificate chain.
-     */
-    EnvoyProxySslClientCertificateLookup(List<List<X500Principal>> validCertPaths) {
-        this.validCertPaths = validCertPaths;
+    EnvoyProxySslClientCertificateLookup(List<List<X500Principal>> verifyCertPaths) {
+        this.verifyCertPaths = verifyCertPaths;
     }
 
     @Override
     public void close() {
+        // Intentionally left empty.
+    }
+
+    @Override
+    public X509Certificate[] getCertificateChain(HttpRequest httpRequest) throws GeneralSecurityException {
+        String xfcc = httpRequest.getHttpHeaders().getRequestHeaders().getFirst(XFCC_HEADER);
+
+        // Choose between basic XFCC extraction and extraction with client cert path verification.
+        if (verifyCertPaths == null) {
+            return extractCertificateChainFromXfcc(xfcc);
+        } else {
+            return extractWithPathVerify(httpRequest, xfcc);
+        }
+    }
+
+    public X509Certificate[] extractWithPathVerify(HttpRequest httpRequest, String xfcc) {
+        // Get TLS layer client certificate.
+        X509Certificate[] clientChainFromTls = httpRequest.getClientCertificateChain();
+
+        // Check if the request was sent over TLS.
+        if (clientChainFromTls == null || clientChainFromTls.length == 0) {
+            logger.debug("No client certificate chain found in the TLS layer.");
+            return null;
+        }
+
+        // No valid paths configured: fallback to TLS layer certificate (this disables XFCC lookup)
+        if (verifyCertPaths.isEmpty()) {
+            logger.debugv("Using client certificate from TLS layer: subject={0} chain length={1}",
+                    clientChainFromTls[0].getSubjectX500Principal(),
+                    clientChainFromTls.length);
+            return clientChainFromTls;
+        }
+
+        // Is request coming from Envoy?
+        boolean isEnvoy = checkClientCertPath(clientChainFromTls);
+
+        // XFCC is not present.
+        if (xfcc == null) {
+            // 1. Request from Envoy but no XFCC header: do not return Envoy's client certificate to avoid impersonation.
+            // 2. Request not from Envoy: return the client certificate chain from the TLS layer, if available.
+            //    This allows clients within Envoy's perimeter to make direct requests using their own client certificate
+            //    without going through Envoy.
+            return isEnvoy ? null : clientChainFromTls;
+        }
+
+        // XFCC is present.
+
+        // Request is coming from Envoy: extract the client certificate chain from the XFCC header.
+        if (isEnvoy) {
+            X509Certificate[] clientChainFromXfcc = extractCertificateChainFromXfcc(xfcc);
+            if (clientChainFromXfcc != null && clientChainFromXfcc.length > 0) {
+                logger.debugv("Using client certificate from x-forwarded-client-cert: subject={0} chain length={1}",
+                        clientChainFromXfcc[0].getSubjectX500Principal(), clientChainFromXfcc.length);
+            } else {
+                logger.debug("No client certificate chain found in x-forwarded-client-cert header.");
+            }
+            return clientChainFromXfcc;
+        }
+
+        // Request is not from Envoy but XFCC is present.
+
+        // Clients sending requests directly should never send XFCC headers: log a warning and ignore the header.
+        logger.infov(
+                "Ignoring x-forwarded-client-cert from client that does not match configured paths. "
+                        + "subject={0}, cert-path-verify={1}",
+                        clientChainFromTls[0].getSubjectX500Principal().getName(), verifyCertPaths);
+
+        return null;
     }
 
     /**
      * Extracts the client certificate chain from the HTTP request forwarded by Envoy.
      *
-     * The Envoy XFCC header value is a comma (",") separated string.
-     * Each substring is an XFCC element, which holds information added by a single proxy.
-     * Each XFCC element is a semicolon (";") separated list of key-value pairs.
+     * The Envoy XFCC header value is a comma (",") separated string. Each substring is an XFCC element, which holds
+     * information added by a single proxy. Each XFCC element is a semicolon (";") separated list of key-value pairs.
      * Each key-value pair is separated by an equal sign ("=").
      *
      * Example:
      *
-     *   x-forwarded-client-cert: key1="url encoded value 1";key2="url encoded value 2";...
+     * x-forwarded-client-cert: key1="url encoded value 1";key2="url encoded value 2";...
      *
      * Following keys are supported by this implementation:
      *
      * 1. Cert - The entire client certificate in URL encoded PEM format.
+     *
      * 2. Chain - The entire client certificate chain (including the leaf certificate) in URL encoded PEM format.
      *
      * For Envoy documentation, see
@@ -79,19 +138,9 @@ public class EnvoyProxySslClientCertificateLookup implements X509ClientCertifica
      * @param httpRequest The HTTP request forwarded by Envoy.
      * @return The client certificate chain extracted from the HTTP request.
      */
-    @Override
-    public X509Certificate[] getCertificateChain(HttpRequest httpRequest) throws GeneralSecurityException {
-        // Before processing the XFCC header:
-        // 1. Check if TLS level authorization is configured.
-        // 2. Check if the TLS level client certificate chain matches the configured valid certificate paths.
-        if (validCertPaths != null && !validCertPaths.isEmpty() && !xfccAuthorized(httpRequest)) {
-            // Request is not coming from authorized client, fall back to the client certificate chain in the TLS layer.
-            logger.debug("The client certificate chain does not match the configured valid certificate paths. Falling back to the TLS layer client certificate chain.");
-            return httpRequest.getClientCertificateChain();
-        }
-
-        String xfcc = httpRequest.getHttpHeaders().getRequestHeaders().getFirst(XFCC_HEADER);
+    public X509Certificate[] extractCertificateChainFromXfcc(String xfcc) {
         if (xfcc == null) {
+            logger.debug("No x-forwarded-client-cert header found.");
             return null;
         }
 
@@ -106,73 +155,62 @@ public class EnvoyProxySslClientCertificateLookup implements X509ClientCertifica
 
         X509Certificate[] certs = null;
 
-        StringTokenizer st = new StringTokenizer(xfcc, ";");
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken();
-            int index = token.indexOf("=");
-            if (index != -1) {
-                String key = token.substring(0, index).trim();
-                String value = token.substring(index + 1).trim();
+        try {
+            StringTokenizer st = new StringTokenizer(xfcc, ";");
+            while (st.hasMoreTokens()) {
+                String token = st.nextToken();
+                int index = token.indexOf("=");
+                if (index != -1) {
+                    String key = token.substring(0, index).trim();
+                    String value = token.substring(index + 1).trim();
 
-                if (key.equals(XFCC_HEADER_CHAIN_KEY)) {
-                    // Chain contains the entire chain including the leaf certificate so we can stop processing the header.
-                    certs = PemUtils.decodeCertificates(decodeValue(value));
-                    break;
-                } else if (key.equals(XFCC_HEADER_CERT_KEY)) {
-                    // Cert contains only the leaf certificate. We need to continue processing the header in case Chain is present.
-                    certs = PemUtils.decodeCertificates(decodeValue(value));
+                    if (key.equals(XFCC_HEADER_CHAIN_KEY)) {
+                        // Chain contains the entire chain including the leaf certificate so we can stop processing the header.
+                        certs = PemUtils.decodeCertificates(decodeValue(value));
+                        break;
+                    } else if (key.equals(XFCC_HEADER_CERT_KEY)) {
+                        // Cert contains only the leaf certificate. We need to continue processing the header in case
+                        // Chain is also present.
+                        certs = PemUtils.decodeCertificates(decodeValue(value));
+                    }
                 }
             }
-        }
 
-        logger.debugv("Returning certificate chain with {0} certificates", certs != null ? certs.length : 0);
-        if (certs != null && logger.isDebugEnabled()) {
-            for (X509Certificate cert : certs) {
-                logger.debugv("Subject: {0}, Issuer: {1}", cert.getSubjectX500Principal(), cert.getIssuerX500Principal());
-            }
+        } catch (Exception e) {
+            logger.warnv("Failed to extract client certificate from x-forwarded-client-cert header: {0}",
+                    e.getMessage());
+            throw new SecurityException("Failed to extract client certificate from x-forwarded-client-cert header", e);
         }
 
         return certs;
     }
 
-    private boolean xfccAuthorized(HttpRequest httpRequest) {
-        X509Certificate[] clientChain = httpRequest.getClientCertificateChain();
-        if (clientChain == null || clientChain.length == 0) {
-            logger.debug("No client certificate chain found in the TLS layer.");
-            return false;
-        }
-
-        return isClientCertPathValid(clientChain);
-    }
-
     /**
-     * Validates the client certificate chain against the configured valid certificate paths.
+     * Verifies the client certificate chain against the configured expected certificate paths.
+     *
+     * Path is a list of subject names from the client certificate chain,
+     * starting from the leaf certificate but excluding the root certificate.
      */
-    private boolean isClientCertPathValid(X509Certificate[] clientCerts) {
-        if (validCertPaths.isEmpty()) {
-            logger.debug("Skipping client certificate chain validation as no certificate paths are configured.");
-            return true;
-        }
-
+    private boolean checkClientCertPath(X509Certificate[] clientChain) {
         // Create a list of subject names from the client certificate chain.
-        List<X500Principal> path = new ArrayList<>();
-        for (X509Certificate cert : clientCerts) {
-            path.add(cert.getSubjectX500Principal());
+        List<X500Principal> receivedPath = new ArrayList<>();
+        for (X509Certificate cert : clientChain) {
+            receivedPath.add(cert.getSubjectX500Principal());
         }
 
-        logger.debugv("Client certificate chain path: {0}", path);
+        logger.debugv("Client certificate path: {0}", receivedPath);
 
-        for (List<X500Principal> validPath : validCertPaths) {
-            logger.debugv("Expected certificate path: {0}", validPath);
+        for (List<X500Principal> expectedPath : verifyCertPaths) {
+            logger.debugv("Expected certificate path: {0}", expectedPath);
 
-            // Valid path cannot be longer than the client certificate chain.
-            if (path.size() < validPath.size()) {
+            // Expected path cannot be longer than the actual client certificate chain.
+            if (receivedPath.size() < expectedPath.size()) {
                 continue;
             }
 
             boolean match = true;
-            for (int i = 0; i < validPath.size(); i++) {
-                if (!path.get(i).equals(validPath.get(i))) {
+            for (int i = 0; i < expectedPath.size(); i++) {
+                if (!receivedPath.get(i).equals(expectedPath.get(i))) {
                     match = false;
                     break;
                 }

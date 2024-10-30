@@ -13,8 +13,8 @@
         "serviceAccountsEnabled": true,
         "attributes": {
           "post.logout.redirect.uris": "https://keycloak.127.0.0.1.nip.io:8443/*",
-          "x509.allow.regex.pattern.comparison": true,
-          "x509.subjectdn": "(.*?)(?:$)"
+          "x509.allow.regex.pattern.comparison": false,
+          "x509.subjectdn": "CN=authorized-client"
         }
       }
     ]

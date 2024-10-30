@@ -64,7 +64,8 @@ public class ScopeImpl implements Scope {
 
     @Override
     public Integer getInt(String key, Integer defaultValue) {
-        throw new UnsupportedOperationException("Unimplemented method 'getInt'");
+        String val = properties.get(key);
+        return val != null ? Integer.parseInt(val) : defaultValue;
     }
 
     @Override

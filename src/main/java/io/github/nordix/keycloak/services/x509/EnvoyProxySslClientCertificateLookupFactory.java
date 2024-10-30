@@ -21,13 +21,11 @@ import org.keycloak.services.x509.X509ClientCertificateLookup;
 import org.keycloak.services.x509.X509ClientCertificateLookupFactory;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-
 
 /**
  * Factory for creating EnvoyProxySslClientCertificateLookup instances.
@@ -36,40 +34,44 @@ public class EnvoyProxySslClientCertificateLookupFactory implements X509ClientCe
 
     private static Logger logger = Logger.getLogger(EnvoyProxySslClientCertificateLookupFactory.class);
 
-    private final static String PROVIDER = "envoy";
+    private static final String PROVIDER = "envoy";
 
-    private List<List<X500Principal>> validCertPaths;
+    private List<List<X500Principal>> verifyCertPaths = null;
 
     @Override
     public void init(Scope config) {
         String pathsJson = config.get("cert-path-verify");
         if (pathsJson != null) {
-            logger.debugv("Client certificate path validation configured: {0}", pathsJson);
             ObjectMapper mapper = new ObjectMapper();
             SimpleModule module = new SimpleModule();
             module.addDeserializer(X500Principal.class, new X500PrincipalDeserializer());
             mapper.registerModule(module);
 
             try {
-                validCertPaths = mapper.readValue(pathsJson, new TypeReference<List<List<X500Principal>>>() {});
+                verifyCertPaths = mapper.readValue(pathsJson, new TypeReference<List<List<X500Principal>>>() {
+                });
             } catch (Exception e) {
                 throw new RuntimeException("Failed to parse cert-paths", e);
             }
-
         }
     }
 
     @Override
     public X509ClientCertificateLookup create(KeycloakSession session) {
-        return new EnvoyProxySslClientCertificateLookup(validCertPaths);
+        logger.debugv("Creating Envoy X509 client certificate lookup: certificate path verification {0} {1}",
+                verifyCertPaths == null ? "disabled" : "enabled",
+                verifyCertPaths == null ? "" : verifyCertPaths);
+        return new EnvoyProxySslClientCertificateLookup(verifyCertPaths);
     }
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
+        // Intentionally left empty.
     }
 
     @Override
     public void close() {
+        // Intentionally left empty.
     }
 
     @Override
@@ -79,7 +81,7 @@ public class EnvoyProxySslClientCertificateLookupFactory implements X509ClientCe
 
     public class X500PrincipalDeserializer extends JsonDeserializer<X500Principal> {
         @Override
-        public X500Principal deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        public X500Principal deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
             return new X500Principal(p.getValueAsString());
         }
     }

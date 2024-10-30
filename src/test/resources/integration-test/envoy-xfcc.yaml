@@ -8,26 +8,11 @@ admin:
 static_resources:
   clusters:
 
-  # Cluster for Keycloak's HTTP port (no TLS between Envoy and Keycloak)
   - name: keycloak
     type: STRICT_DNS
     connect_timeout: 5s
     load_assignment:
       cluster_name: keycloak
-      endpoints:
-      - lb_endpoints:
-        - endpoint:
-            address:
-              socket_address:
-                address: keycloak
-                port_value: 8080
-
-  # Cluster for Keycloak's HTTPS port, using client cert for Envoy that is authorized to send XFCC.
-  - name: keycloak-https-with-authorized-client-cert
-    type: STRICT_DNS
-    connect_timeout: 5s
-    load_assignment:
-      cluster_name: keycloak-https-with-authorized-client-cert
       endpoints:
       - lb_endpoints:
         - endpoint:
@@ -42,9 +27,9 @@ static_resources:
         common_tls_context:
           tls_certificates:
             certificate_chain:
-              filename: "/input/target/certs/authorized-client.pem"
+              filename: "/input/target/certs/envoy-client.pem"
             private_key:
-              filename: "/input/target/certs/authorized-client-key.pem"
+              filename: "/input/target/certs/envoy-client-key.pem"
           validation_context:
             trusted_ca:
               filename: "/input/target/certs/server-ca.pem"
@@ -74,7 +59,6 @@ static_resources:
             name: myroute
             virtual_hosts:
 
-            # Virtual host for connecting to Keycloak's HTTP port (no TLS between Envoy and Keycloak)
             - name: keycloak
               domains:
               - "keycloak.127.0.0.1.nip.io:8443"
@@ -83,16 +67,6 @@ static_resources:
                   prefix: "/"
                 route:
                   cluster: keycloak
-
-            # Virtual host for connecting to Keycloak's HTTPS port, using client cert for Envoy that is authorized to send XFCC.
-            - name: keycloak-https
-              domains:
-              - "keycloak-https.127.0.0.1.nip.io:8443"
-              routes:
-              - match:
-                  prefix: "/"
-                route:
-                  cluster: keycloak-https-with-authorized-client-cert
 
           forward_client_cert_details: SANITIZE_SET
           set_current_client_cert_details:
