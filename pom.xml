@@ -20,7 +20,7 @@
 
     <junit.jupiter.version>5.11.3</junit.jupiter.version>
     <jboss.resteasy.version>6.2.10.Final</jboss.resteasy.version>
-    <certy.version>0.3.1</certy.version>
+    <certy.version>0.4.0</certy.version>
     <maven.clean.plugin.version>3.4.0</maven.clean.plugin.version>
     <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
     <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
