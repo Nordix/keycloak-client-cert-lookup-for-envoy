@@ -65,7 +65,7 @@ For more information on this, refer to [Understanding Client Certificate Forward
 Prerequisites:
 
 * Envoy must use TLS and client certificate authentication for its connection to Keycloak.
-* X509 client certificate lookup SPI for Envoy proxy must be configured with the list of expected subject names for clients that are allowed to send XFCC headers.
+* X509 Client Certificate Lookup for Envoy must be configured with the list of expected subject names for clients that are allowed to send XFCC headers.
 
 The list is configured as a command line parameter to `kc.sh` in the following format:
 
