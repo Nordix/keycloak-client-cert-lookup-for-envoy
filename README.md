@@ -58,7 +58,7 @@ Refer to Keycloak's [Configuring Providers](https://www.keycloak.org/server/conf
 
 If Keycloak is deployed in an environment where some clients must bypass the proxy, it is important to ensure that only Envoy can send XFCC headers.
 This prevents clients from impersonating other users by sending XFCC headers.
-For more information on this, refer to [Understanding Client Certificate Forwarding and Security Implications](docs/security-and-client-cert-forwarding.md#authorizing-the-xfcc-header).
+For more information on this, refer to [Understanding Client Certificate Forwarding and Security Implications](docs/security-and-client-cert-forwarding.md).
 
 Prerequisites:
 
