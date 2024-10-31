@@ -7,18 +7,33 @@ admin:
       port_value: 9901
 static_resources:
   clusters:
-  - name: mycluster
+
+  - name: keycloak
     type: STRICT_DNS
     connect_timeout: 5s
     load_assignment:
-      cluster_name: mycluster
+      cluster_name: keycloak
       endpoints:
       - lb_endpoints:
         - endpoint:
             address:
               socket_address:
                 address: keycloak
-                port_value: 8080
+                port_value: 8443
+    transport_socket:
+      name: envoy.transport_sockets.tls
+      typed_config:
+        "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+        common_tls_context:
+          tls_certificates:
+            certificate_chain:
+              filename: "/input/target/certs/envoy-client.pem"
+            private_key:
+              filename: "/input/target/certs/envoy-client-key.pem"
+          validation_context:
+            trusted_ca:
+              filename: "/input/target/certs/server-ca.pem"
+
   listeners:
   - name: http
     address:
@@ -43,14 +58,15 @@ static_resources:
           route_config:
             name: myroute
             virtual_hosts:
-            - name: myupstream
+
+            - name: keycloak
               domains:
-              - "*"
+              - "keycloak.127.0.0.1.nip.io:8443"
               routes:
               - match:
                   prefix: "/"
                 route:
-                  cluster: mycluster
+                  cluster: keycloak
 
           forward_client_cert_details: SANITIZE_SET
           set_current_client_cert_details:

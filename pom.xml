@@ -13,14 +13,17 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.release>21</maven.compiler.release>
+    <!-- Compatibility with Keycloak 20 to 25 -->
+    <maven.compiler.release>17</maven.compiler.release>
 
     <!-- Versions of dependencies -->
     <keycloak.version>26.0.2</keycloak.version>
 
     <junit.jupiter.version>5.11.3</junit.jupiter.version>
     <jboss.resteasy.version>6.2.10.Final</jboss.resteasy.version>
+    <jboss.logmanager.version>3.0.6.Final</jboss.logmanager.version>
     <certy.version>0.4.0</certy.version>
+    <apache.commons.exec.version>1.4.0</apache.commons.exec.version>
     <maven.clean.plugin.version>3.4.0</maven.clean.plugin.version>
     <maven.resources.plugin.version>3.3.1</maven.resources.plugin.version>
     <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
@@ -51,6 +54,13 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-services</artifactId>
+      <version>${keycloak.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <!-- For HttpRequest if Keycloak version is 23 or below. -->
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-server-spi</artifactId>
       <version>${keycloak.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -86,6 +96,18 @@
       <version>${certy.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-exec</artifactId>
+      <version>${apache.commons.exec.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.logmanager</groupId>
+      <artifactId>jboss-logmanager</artifactId>
+      <version>${jboss.logmanager.version}</version>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
 
@@ -117,6 +139,8 @@
           <configuration>
             <systemPropertyVariables>
               <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+              <java.util.logging.config.file>
+                ${project.basedir}/src/test/resources/logging.properties</java.util.logging.config.file>
             </systemPropertyVariables>
           </configuration>
         </plugin>
@@ -141,7 +165,7 @@
     </pluginManagement>
 
     <plugins>
-      <!-- Integration test configuration -->
+      <!-- Integration test -->
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>${maven.failsafe.plugin.version}</version>
@@ -165,7 +189,7 @@
         </executions>
       </plugin>
 
-      <!-- Checkstyle configuration -->
+      <!-- Checkstyle -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
