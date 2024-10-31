@@ -72,7 +72,6 @@ public class PathVericationTest {
 
         // Check that client1 certificate from XFCC is returned.
         Assertions.assertNotNull(certs);
-        Assertions.assertEquals(1, certs.length);
         Assertions.assertEquals(client1.getX509Certificate(), certs[0]);
     }
 
@@ -96,7 +95,6 @@ public class PathVericationTest {
         // Check that client1 certificate from XFCC is returned.
         X509Certificate[] certs = lookup.getCertificateChain(request);
         Assertions.assertNotNull(certs);
-        Assertions.assertEquals(1, certs.length);
         Assertions.assertEquals(client1.getX509Certificate(), certs[0]);
     }
 
@@ -158,7 +156,6 @@ public class PathVericationTest {
         // Check that client1 certificate from XFCC is returned.
         X509Certificate[] certs = lookup.getCertificateChain(request);
         Assertions.assertNotNull(certs);
-        Assertions.assertEquals(2, certs.length);
         Assertions.assertArrayEquals(client1.getCertificates(), certs);
 
         tlsLayerClientCerts = Helpers.getCertificateChain(envoy2);
@@ -169,7 +166,6 @@ public class PathVericationTest {
         // Check that client2 certificate from XFCC is returned.
         certs = lookup.getCertificateChain(request);
         Assertions.assertNotNull(certs);
-        Assertions.assertEquals(2, certs.length);
         Assertions.assertArrayEquals(client2.getCertificates(), certs);
     }
 

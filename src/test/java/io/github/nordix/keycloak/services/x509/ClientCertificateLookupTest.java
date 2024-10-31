@@ -52,8 +52,7 @@ public class ClientCertificateLookupTest {
 
         X509Certificate[] certs = envoyLookup.getCertificateChain(request);
         Assertions.assertNotNull(certs);
-        Assertions.assertEquals(1, certs.length);
-        Assertions.assertEquals("CN=x509client", certs[0].getSubjectX500Principal().getName());
+        Assertions.assertArrayEquals(client.getX509Certificates(), certs);
     }
 
     /**
@@ -71,9 +70,7 @@ public class ClientCertificateLookupTest {
         X509Certificate[] certs = envoyLookup.getCertificateChain(request);
 
         Assertions.assertNotNull(certs);
-        Assertions.assertEquals(2, certs.length);
-        Assertions.assertEquals("CN=x509client", certs[0].getSubjectX500Principal().getName());
-        Assertions.assertEquals("CN=client-sub-ca", certs[1].getSubjectX500Principal().getName());
+        Assertions.assertArrayEquals(client.getX509Certificates(), certs);
     }
 
     /**
@@ -92,9 +89,7 @@ public class ClientCertificateLookupTest {
         X509Certificate[] certs = envoyLookup.getCertificateChain(request);
 
         Assertions.assertNotNull(certs);
-        Assertions.assertEquals(2, certs.length);
-        Assertions.assertEquals("CN=x509client", certs[0].getSubjectX500Principal().getName());
-        Assertions.assertEquals("CN=client-sub-ca", certs[1].getSubjectX500Principal().getName());
+        Assertions.assertArrayEquals(client.getX509Certificates(), certs);
     }
 
     /**
@@ -125,8 +120,7 @@ public class ClientCertificateLookupTest {
         X509Certificate[] certs = envoyLookup.getCertificateChain(request);
 
         Assertions.assertNotNull(certs);
-        Assertions.assertEquals(1, certs.length);
-        Assertions.assertEquals("CN=client1", certs[0].getSubjectX500Principal().getName());
+        Assertions.assertArrayEquals(client1.getX509Certificates(), certs);
     }
 
     /**
