@@ -41,6 +41,8 @@ Add following command line parameter to `kc.sh` to choose the provider:
 --spi-x509cert-lookup-provider=envoy
 ```
 
+Alternatively, you can set the environment variable `KC_SPI_X509CERT_LOOKUP_PROVIDER=envoy` or specify `spi-x509cert-lookup-provider=envoy` in the Keycloak configuration file.
+
 Restart Keycloak for the changes to take effect.
 You will see a warning in the logs when the JAR file is loaded:
 
@@ -70,13 +72,16 @@ The list is configured as a command line parameter to `kc.sh` in the following f
 ```
 --spi-x509cert-lookup-envoy-cert-path-verify="[ [ <leaf-cert-subject>, <intermediate-cert-subject>, ... ], ... ]"
 ```
+
+Alternatively, you can set the environment variable `KC_SPI_X509CERT_LOOKUP_ENVOY_CERT_PATH_VERIFY=[[ "CN=envoy" ]]` or specify `spi-x509cert-lookup-envoy-cert-path-verify=[[ "CN=envoy-client" ]]` in the Keycloak configuration file.
+
 The parameter is optional and its behavior is as follows:
 
 | Parameter value | Description | Example |
 | --- | --- | --- |
-| Not set | XFCC headers will be processed from any client. | N/A |
-| Empty array | XFCC headers will not be processed from any client. | `--spi-x509cert-lookup-envoy-cert-path-verify='[]'` |
-| Non-empty array | XFCC headers will be processed only if the TLS-level client certificate chain matches the specified subject names. | `--spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=envoy" ]]'` |
+| Not set | XFCC header will be processed from any client. | N/A |
+| Empty array | XFCC header will not be processed from any client. | `--spi-x509cert-lookup-envoy-cert-path-verify='[]'` |
+| Non-empty array | XFCC header will be processed only if the TLS-level client certificate chain matches the specified subject names. | `--spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=envoy" ]]'` |
 
 The parameter value is a JSON array of arrays.
 Each inner array represents a certificate chain, with the first element as the leaf certificate's subject name and subsequent elements as intermediate certificates.
