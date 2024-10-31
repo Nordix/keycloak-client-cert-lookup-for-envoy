@@ -56,7 +56,7 @@ services:
 
     volumes:
       - ./:/input:ro
-      - ${KEYCLOAK_JAR_PATH}:/opt/keycloak/providers/keycloak-client-cert-lookup-for-envoy.jar:ro
+      - ${EXTENSION_JAR_PATH}:/opt/keycloak/providers/keycloak-client-cert-lookup-for-envoy.jar:ro
 
     # Expose Keycloak's HTTPS port to allow test suite to do direct requests.
     ports:

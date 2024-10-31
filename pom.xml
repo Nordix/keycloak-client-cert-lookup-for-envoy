@@ -183,7 +183,7 @@
               </systemPropertyVariables>
               <environmentVariables>
                 <KEYCLOAK_VERSION>${keycloak.version}</KEYCLOAK_VERSION>
-                <KEYCLOAK_JAR_PATH>${project.build.directory}/${project.artifactId}-${project.version}.jar</KEYCLOAK_JAR_PATH>
+                <EXTENSION_JAR_PATH>${project.build.directory}/${project.artifactId}-${project.version}.jar</EXTENSION_JAR_PATH>
               </environmentVariables>
             </configuration>
           </execution>
