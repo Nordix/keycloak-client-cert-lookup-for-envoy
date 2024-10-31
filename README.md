@@ -70,10 +70,10 @@ Prerequisites:
 The list is configured as a command line parameter to `kc.sh` in the following format:
 
 ```
---spi-x509cert-lookup-envoy-cert-path-verify="[ [ <leaf-cert-subject>, <intermediate-cert-subject>, ... ], ... ]"
+--spi-x509cert-lookup-envoy-cert-path-verify='[[ "<leaf-subject>", "<intermediate-subject>", ... ], ... ]'
 ```
 
-Alternatively, you can set the environment variable `KC_SPI_X509CERT_LOOKUP_ENVOY_CERT_PATH_VERIFY=[[ "CN=envoy" ]]` or specify `spi-x509cert-lookup-envoy-cert-path-verify=[[ "CN=envoy-client" ]]` in the Keycloak configuration file.
+Alternatively, you can set the environment variable `KC_SPI_X509CERT_LOOKUP_ENVOY_CERT_PATH_VERIFY=[[ "CN=envoy" ]]` or specify `spi-x509cert-lookup-envoy-cert-path-verify=[[ "CN=envoy" ]]` in the Keycloak configuration file.
 
 The parameter is optional and its behavior is as follows:
 
