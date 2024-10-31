@@ -58,25 +58,25 @@ Refer to Keycloak's [Configuring Providers](https://www.keycloak.org/server/conf
 
 If Keycloak is deployed in an environment where some clients must bypass the proxy, it is important to ensure that only Envoy can send XFCC headers.
 This prevents clients from impersonating other users by sending XFCC headers.
-For more information on the verification process, refer to [this section](docs/security-and-client-cert-forwarding.md#mitigation) of the security implications document.
+For more information on this, refer to [Understanding Client Certificate Forwarding and Security Implications](docs/security-and-client-cert-forwarding.md#authorizing-the-xfcc-header).
 
 Prerequisites:
 
-* Envoy must TLS and client certificate authentication for its connection to Keycloak.
-* Configure the list of expected client certificate subject names that are allowed to send XFCC headers.
+* Envoy must use TLS and client certificate authentication for its connection to Keycloak.
+* X509 client certificate lookup SPI for Envoy proxy must be configured with the list of expected subject names for clients that are allowed to send XFCC headers.
 
 The list is configured as a command line parameter to `kc.sh` in the following format:
 
 ```
 --spi-x509cert-lookup-envoy-cert-path-verify="[ [ <leaf-cert-subject>, <intermediate-cert-subject>, ... ], ... ]"
 ```
-The presence of this parameter is optional and its behavior is as follows:
+The parameter is optional and its behavior is as follows:
 
 | Parameter value | Description | Example |
 | --- | --- | --- |
-| Not set | Any client can send XFCC headers, and they will be processed. | N/A |
+| Not set | XFCC headers will be processed from any client. | N/A |
 | Empty array | XFCC headers will not be processed from any client. | `--spi-x509cert-lookup-envoy-cert-path-verify='[]'` |
-| Non-empty array | XFCC headers will be processed only if the client certificate chain matches the specified subject names. | `--spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=envoy" ]]'` |
+| Non-empty array | XFCC headers will be processed only if the TLS-level client certificate chain matches the specified subject names. | `--spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=envoy" ]]'` |
 
 The parameter value is a JSON array of arrays.
 Each inner array represents a certificate chain, with the first element as the leaf certificate's subject name and subsequent elements as intermediate certificates.
@@ -87,7 +87,7 @@ For example, to allow a client certificate chain with the subject name `CN=envoy
 --spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=envoy, O=example.com", "CN=intermediate, O=example.com" ]]'
 ```
 
-The subject names must match exactly, as X.500 Distinguished Names (DN) are order-sensitive (`CN=envoy, O=example.com` is not the same as `O=example.com, CN=envoy`).
+The subject names must match exactly, as X500 Distinguished Names are order-sensitive (`CN=envoy, O=example.com` is not the same as `O=example.com, CN=envoy`).
 The path can be partial: verification succeeds if the expected subject names are found in order, even if the received chain has additional certificates.
 
 
