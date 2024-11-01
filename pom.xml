@@ -6,7 +6,7 @@
 
   <groupId>io.github.nordix</groupId>
   <artifactId>keycloak-client-cert-lookup-for-envoy</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0-SNAPSHOT</version>
 
   <name>keycloak-client-cert-lookup-for-envoy</name>
   <url>https://github.com/nordix/keycloak-client-cert-lookup-for-envoy</url>
