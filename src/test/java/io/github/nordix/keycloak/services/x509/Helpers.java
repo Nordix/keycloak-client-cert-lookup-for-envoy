@@ -26,6 +26,9 @@ import fi.protonode.certy.Credential;
 
 public class Helpers {
 
+    /**
+     * Dummy password for the KeyStore for unit tests.
+     */
     static final String STORE_PASSWORD = "password";
 
     /**
@@ -38,24 +41,39 @@ public class Helpers {
         return factory.create(null);
     }
 
+    /**
+     * Get the certificate chain from the Credential in X509Certificate array.
+     */
     static X509Certificate[] getCertificateChain(Credential cred)
             throws CertificateException, NoSuchAlgorithmException {
         return Arrays.stream(cred.getCertificates()).map(cert -> (X509Certificate) cert)
                 .toArray(X509Certificate[]::new);
     }
 
+    /**
+     * Get XFCC element with the leaf certificate in "Cert" key.
+     * Hash is a dummy value.
+     */
     static String getXfccWithCert(Credential cred)
             throws CertificateException, NoSuchAlgorithmException, IOException {
         return String.format("Hash=1234;Cert=\"%s\"",
                 URLEncoder.encode(cred.getCertificateAsPem(), StandardCharsets.UTF_8));
     }
 
+    /**
+     * Get XFCC element with the certificate chain in "Chain" key.
+     * Hash is a dummy value.
+     */
     static String getXfccWithChain(Credential cred)
             throws CertificateException, NoSuchAlgorithmException, IOException {
         return String.format("Hash=1234;Chain=\"%s\"",
                 URLEncoder.encode(cred.getCertificatesAsPem(), StandardCharsets.UTF_8));
     }
 
+    /**
+     * Get XFCC element with both the leaf certificate in "Cert" and chain in "Chain" keys.
+     * Hash is a dummy value.
+     */
     static String getXfccWithCertAndChain(Credential cred)
             throws CertificateException, NoSuchAlgorithmException, IOException {
         return String.format("Hash=1234;Cert=\"%s\";Chain=\"%s\"",
@@ -63,6 +81,10 @@ public class Helpers {
                 URLEncoder.encode(cred.getCertificatesAsPem(), StandardCharsets.UTF_8));
     }
 
+    /**
+     * Create new KeyStore with the Credential.
+     * The password is set to {@link #STORE_PASSWORD}.
+     */
     static KeyStore newKeyStore(Credential cred)
             throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         KeyStore ks = KeyStore.getInstance("PKCS12");
@@ -72,6 +94,9 @@ public class Helpers {
         return ks;
     }
 
+    /**
+     * Create new TrustStore with the Credential.
+     */
     static KeyStore newTrustStore(Credential cred)
             throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         KeyStore ts = KeyStore.getInstance("PKCS12");

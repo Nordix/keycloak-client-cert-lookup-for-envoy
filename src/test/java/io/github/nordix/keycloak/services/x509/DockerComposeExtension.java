@@ -25,7 +25,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 public class DockerComposeExtension implements BeforeAllCallback, AfterAllCallback {
 
     private static final String DOCKER_COMPOSE_UP = "docker compose up --force-recreate --no-color --abort-on-container-exit";
-    private static final String DOCKER_COMPOSE_DOWN = "docker compose down";
+    private static final String DOCKER_COMPOSE_DOWN = "docker compose rm --force --stop";
 
     private static Logger logger = Logger.getLogger(DockerComposeExtension.class);
 

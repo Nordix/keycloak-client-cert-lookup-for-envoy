@@ -34,6 +34,7 @@
     <maven.project-info-reports-plugin.version>3.8.0</maven.project-info-reports-plugin.version>
     <maven.failsafe.plugin.version>3.5.1</maven.failsafe.plugin.version>
     <maven.checkstyle.plugin.version>3.6.0</maven.checkstyle.plugin.version>
+    <maven.jacoco.plugin.version>0.8.12</maven.jacoco.plugin.version>
 
   </properties>
 
@@ -186,6 +187,27 @@
                 <EXTENSION_JAR_PATH>${project.build.directory}/${project.artifactId}-${project.version}.jar</EXTENSION_JAR_PATH>
               </environmentVariables>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Jacoco coverage report -->
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${maven.jacoco.plugin.version}</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report</id>
+            <phase>test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>

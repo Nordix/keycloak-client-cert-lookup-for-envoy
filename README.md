@@ -106,6 +106,8 @@ To run unit tests, use:
 ./mvnw clean test
 ```
 
+The coverage report is generated in `target/site/jacoco/index.html`.
+
 Integration tests require Docker Compose to start Keycloak and Envoy.
 Ensure Docker is installed.
 To run integration tests, use:
