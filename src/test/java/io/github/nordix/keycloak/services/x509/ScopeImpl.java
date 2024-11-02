@@ -15,7 +15,8 @@ import java.util.Map;
 import org.keycloak.Config.Scope;
 
 /**
- * Minimal implementation of Keycloak's Scope for unit testing purposes.
+ * Minimal implementation of Keycloak's Scope for unit tests.
+ * It is used to carry configuration parameters for the X509 client certificate lookup.
  */
 public class ScopeImpl implements Scope {
 

@@ -124,15 +124,43 @@ public class ClientCertificateLookupTest {
     }
 
     /**
-     * Corrupted certificate in XFCC header.
+     * Empty XFCC header.
      */
     @Test
-    void testCorruptedCertificate() throws Exception {
+    void testEmptyCertificate() throws Exception {
         HttpRequest request = new HttpRequestImpl(
+                MockHttpRequest.create("GET", "http://foo/bar").header("x-forwarded-client-cert", ""));
+        Assertions.assertNull(envoyLookup.getCertificateChain(request));
+    }
+
+    /**
+     * Corrupted XFCC header.
+     */
+    @Test
+    void testCorruptedXfcc() throws Exception {
+        HttpRequest request1 = new HttpRequestImpl(
                 MockHttpRequest.create("GET", "http://foo/bar").header("x-forwarded-client-cert", "Cert=\"foobar\""));
 
         Assertions.assertThrows(SecurityException.class, () -> {
-            envoyLookup.getCertificateChain(request);
+            envoyLookup.getCertificateChain(request1);
+        });
+
+        HttpRequest request2 = new HttpRequestImpl(MockHttpRequest.create("GET", "http://foo/bar").header("x-forwarded-client-cert",
+                "Hash=1234;Chain=\"foobar\""));
+        Assertions.assertThrows(SecurityException.class, () -> {
+            envoyLookup.getCertificateChain(request2);
+        });
+
+        HttpRequest request3 = new HttpRequestImpl(MockHttpRequest.create("GET", "http://foo/bar").header("x-forwarded-client-cert",
+                "Hash=1234;Cert=\"no end quote"));
+        Assertions.assertThrows(SecurityException.class, () -> {
+            envoyLookup.getCertificateChain(request3);
+        });
+
+        HttpRequest request4 = new HttpRequestImpl(MockHttpRequest.create("GET", "http://foo/bar").header("x-forwarded-client-cert",
+                "Hash=1234;Cert=no start quote\""));
+        Assertions.assertThrows(SecurityException.class, () -> {
+            envoyLookup.getCertificateChain(request4);
         });
     }
 

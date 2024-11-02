@@ -118,7 +118,7 @@ public class ClientCertificateLookupIT {
                 if (response.getStatusInfo().getFamily() != Response.Status.Family.SERVER_ERROR) {
                     break;
                 }
-                logger.infov("Response={0}", response.getStatus());
+                logger.infov("Response={0} {1}", response.getStatus(), response.getStatusInfo().getReasonPhrase());
 
             } catch (Exception e) {
                 logger.infov("Cannot connect: {0}", e.getMessage());
@@ -150,11 +150,13 @@ public class ClientCertificateLookupIT {
 
         Response response = target.request().post(Entity.form(form));
         String responseBody = response.readEntity(String.class);
-        Assertions.assertEquals(200, response.getStatus(), "Failed to fetch token. Response=" + responseBody);
+        Assertions.assertEquals(Response.Status.OK, response.getStatusInfo(),
+                "Was expecting 200 OK. Response=" + responseBody);
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode obj = mapper.readTree(responseBody);
-        Assertions.assertTrue(obj.has("access_token"), "Response does not contain access_token");
+        Assertions.assertTrue(obj.has("access_token"),
+                "Was expecting access_token in response but got: " + responseBody);
     }
 
     /**
@@ -175,7 +177,8 @@ public class ClientCertificateLookupIT {
 
         Response response = target.request().post(Entity.form(form));
         String responseBody = response.readEntity(String.class);
-        Assertions.assertEquals(401, response.getStatus(), "Was expecting 401 Unauthorized. Response=" + responseBody);
+        Assertions.assertEquals(Response.Status.UNAUTHORIZED, response.getStatusInfo(),
+                "Was expecting 401 Unauthorized. Response=" + responseBody);
     }
 
     /**
@@ -193,7 +196,8 @@ public class ClientCertificateLookupIT {
 
         Response response = target.request().post(Entity.form(form));
         String responseBody = response.readEntity(String.class);
-        Assertions.assertEquals(401, response.getStatus(), "Was expecting 401 Unauthorized. Response=" + responseBody);
+        Assertions.assertEquals(Response.Status.UNAUTHORIZED, response.getStatusInfo(),
+                "Was expecting 401 Unauthorized. Response=" + responseBody);
     }
 
     /**
@@ -213,7 +217,8 @@ public class ClientCertificateLookupIT {
         Response response = target.request().header("x-forwarded-client-cert", Helpers.getXfccWithCert(xfccCred))
                 .post(Entity.form(form));
         String responseBody = response.readEntity(String.class);
-        Assertions.assertEquals(401, response.getStatus(), "Was expecting 401 Unauthorized. Response=" + responseBody);
+        Assertions.assertEquals(Response.Status.UNAUTHORIZED, response.getStatusInfo(),
+                "Was expecting 401 Unauthorized. Response=" + responseBody);
     }
 
     /**
@@ -235,7 +240,8 @@ public class ClientCertificateLookupIT {
                 .post(Entity.form(form));
 
         String responseBody = response.readEntity(String.class);
-        Assertions.assertEquals(401, response.getStatus(), "Was expecting 401 Unauthorized. Response=" + responseBody);
+        Assertions.assertEquals(Response.Status.UNAUTHORIZED, response.getStatusInfo(),
+                "Was expecting 401 Unauthorized. Response=" + responseBody);
     }
 
     /**
@@ -246,7 +252,7 @@ public class ClientCertificateLookupIT {
      * 5. Keycloak X509 Authenticator accepts request (CN=authorized-client) and returns the token.
      */
     @Test
-    void TestInternalClientHttpsAuthorized() throws Exception {
+    void testInternalClientHttpsAuthorized() throws Exception {
         Credential tlsCred = new Credential().subject("CN=authorized-client").issuer(clientCa);
 
         WebTarget target = newTargetWithClientAuth(
@@ -254,11 +260,13 @@ public class ClientCertificateLookupIT {
 
         Response response = target.request().post(Entity.form(form));
         String responseBody = response.readEntity(String.class);
-        Assertions.assertEquals(200, response.getStatus(), "Failed to fetch token. Response=" + responseBody);
+        Assertions.assertEquals(Response.Status.OK, response.getStatusInfo(),
+                "Was expecting 200 OK. Response=" + responseBody);
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode obj = mapper.readTree(responseBody);
-        Assertions.assertTrue(obj.has("access_token"), "Response does not contain access_token");
+        Assertions.assertTrue(obj.has("access_token"),
+                "Was expecting access_token in response but got: " + responseBody);
     }
 
     // Helper methods

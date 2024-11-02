@@ -49,8 +49,8 @@ services:
           --log-level=INFO,io.github.nordix.keycloak.services.x509:debug
 
     environment:
-      - KEYCLOAK_ADMIN=admin
-      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
       - KC_HOSTNAME=https://keycloak.127.0.0.1.nip.io:8443
       - KC_HTTP_ENABLED=true
 
