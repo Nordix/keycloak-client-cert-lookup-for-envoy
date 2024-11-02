@@ -2,3 +2,4 @@
 *.jar
 target/
 .vscode/
+pom.xml.versionsBackup
