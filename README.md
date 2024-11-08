@@ -26,7 +26,7 @@ For instance, in the official Keycloak Docker image releases, place the JAR file
 
 ## Configuration
 
-For information on how to use the project, refer to following documents:
+For information on how to use the project, refer to the following documents:
 
 * See [here](docs/ingress-controllers.md) on how to configure Kubernetes ingress controllers for client certificate forwarding.
 * For more information on the Keycloak feature, refer to [Keycloak's reverse proxy documentation](https://www.keycloak.org/server/reverseproxy) and the section [Enabling client certificate lookup](https://www.keycloak.org/server/reverseproxy#_enabling_client_certificate_lookup).
@@ -35,7 +35,7 @@ For information on how to use the project, refer to following documents:
 
 ### Enable client certificate lookup (mandatory)
 
-Add following command line parameter to `kc.sh` to choose the provider:
+Add the following command line parameter to `kc.sh` to choose the provider:
 
 ```
 --spi-x509cert-lookup-provider=envoy
