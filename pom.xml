@@ -20,7 +20,7 @@
     <keycloak.version>26.0.5</keycloak.version>
 
     <junit.jupiter.version>5.11.3</junit.jupiter.version>
-    <jboss.resteasy.version>6.2.10.Final</jboss.resteasy.version>
+    <jboss.resteasy.version>6.2.11.Final</jboss.resteasy.version>
     <jboss.logmanager.version>3.0.6.Final</jboss.logmanager.version>
     <certy.version>0.4.1</certy.version>
     <apache.commons.exec.version>1.4.0</apache.commons.exec.version>
