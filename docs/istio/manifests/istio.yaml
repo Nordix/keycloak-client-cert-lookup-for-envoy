@@ -1,0 +1,41 @@
+# Policy to require mutually authenticated TLS for all workloads within the service mesh.
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: "default"
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: mygateway
+spec:
+  selector:
+    istio: ingressgateway # Use istio default ingress gateway.
+  servers:
+  - port:
+      number: 8443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: OPTIONAL_MUTUAL  # Terminate TLS, request client certificate, but do not require it.
+      credentialName: ingress-cert
+    hosts:
+    - "*"  # Accept any incoming request, do not require TLS SNI to be set.
+---
+# Configure L7 HTTP URL based routing from gateway to the actual Service.
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: keycloak
+spec:
+  hosts:
+  - "keycloak.127.0.0.1.nip.io"
+  gateways:
+  - mygateway
+  http:
+  - route:
+    - destination:
+        host: keycloak
