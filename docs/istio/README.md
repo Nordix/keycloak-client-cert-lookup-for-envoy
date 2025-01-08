@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This guide provides steps to deploy a demo where Istio authenticates the client using an X509 client certificate and forwards the certificate to Keycloak using Envoy XFCC (External Authorization Filter) HTTP header.
+This guide provides steps to deploy a demo where Istio authenticates the client using an X509 client certificate and forwards the certificate to Keycloak using Envoy XFCC (X-Forwarded-Client-Cert) HTTP header.
 Keycloak is configured with the Client Certificate Lookup extension for Envoy, which parses the client certificate and uses it for authentication.
 
 ## Installation
