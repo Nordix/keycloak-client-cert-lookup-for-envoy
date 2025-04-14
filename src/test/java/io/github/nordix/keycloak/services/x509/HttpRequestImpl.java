@@ -59,6 +59,11 @@ public class HttpRequestImpl implements HttpRequest {
         throw new UnsupportedOperationException("Unimplemented method 'getUri'");
     }
 
+    @Override
+    public boolean isProxyTrusted() {
+        return true;
+    }
+
     public HttpRequestImpl setClientCertificateChain(X509Certificate[] clientCertificateChain) {
         this.clientCertificateChain = clientCertificateChain;
         return this;
