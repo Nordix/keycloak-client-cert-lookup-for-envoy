@@ -5,7 +5,8 @@ It allows Keycloak to retrieve the client certificate from the `x-forwarded-clie
 
 This project was created because the code submitted in [keycloak#33159](https://github.com/keycloak/keycloak/pull/33159) was not accepted.
 Instead, Keycloak encourages the development of implementations for different proxies as extensions.
-
+However, `x509cert-lookup` SPI is considered internal and may change without prior notice.
+A request to make this SPI stable has been submitted here: [keycloak#33818](https://github.com/keycloak/keycloak/issues/33818).
 
 > ⚠️ **Alert:** There are implications that you should be aware of when enabling client certificate lookup in Keycloak.
 For more information, see [Understanding Client Certificate Forwarding and Security Implications](docs/security-and-client-cert-forwarding.md).
