@@ -140,8 +140,8 @@
           <configuration>
             <systemPropertyVariables>
               <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-              <java.util.logging.config.file>
-                ${project.basedir}/src/test/resources/logging.properties</java.util.logging.config.file>
+              <logging.configuration>
+                file:///${project.basedir}/src/test/resources/logging.properties</logging.configuration>
             </systemPropertyVariables>
           </configuration>
         </plugin>
@@ -179,8 +179,8 @@
             <configuration>
               <systemPropertyVariables>
                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                <java.util.logging.config.file>
-                  ${project.basedir}/src/test/resources/logging.properties</java.util.logging.config.file>
+                <logging.configuration>
+                  file:///${project.basedir}/src/test/resources/logging.properties</logging.configuration>
               </systemPropertyVariables>
               <environmentVariables>
                 <KEYCLOAK_VERSION>${keycloak.version}</KEYCLOAK_VERSION>
