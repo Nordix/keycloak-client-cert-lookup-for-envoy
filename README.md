@@ -32,6 +32,8 @@ For information on how to use the project, refer to the following documents:
 * See [here](docs/ingress-controllers.md) on how to configure Kubernetes ingress controllers for client certificate forwarding.
 * For more information on the Keycloak feature, refer to [Keycloak's reverse proxy documentation](https://www.keycloak.org/server/reverseproxy) and the section [Enabling client certificate lookup](https://www.keycloak.org/server/reverseproxy#_enabling_client_certificate_lookup).
 * See also [Envoy's documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/headers#x-forwarded-client-cert) on XFCC header.
+* If you're enabling [authorization](#authorizing-clients-that-are-allowed-to-send-xfcc-headers-optional) for the XFCC header, configure the CA certificates using `https-trust-store` to validate the client, and set `https-client-auth` to `request` so that Keycloak optionally requests a client certificate. Follow the Keycloak guide on [Configuring trusted certificates for mTLS](https://www.keycloak.org/server/mutual-tls) for detailed instructions.
+
 
 
 ### Enable client certificate lookup (mandatory)
