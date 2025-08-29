@@ -16,3 +16,7 @@ updates:
       junit:
         patterns:
           - "org.junit.*"
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
