@@ -1,7 +1,7 @@
 services:
 
   envoy:
-    image: envoyproxy/envoy:v1.35.1
+    image: envoyproxy/envoy:v1.35.2
 
     command: ["envoy", "-c", "/input/src/test/resources/integration-test/envoy-xfcc.yaml"]
 
