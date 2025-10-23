@@ -98,4 +98,9 @@ public class ScopeImpl implements Scope {
     public Set<String> getPropertyNames() {
         throw new UnsupportedOperationException("Unimplemented method 'getPropertyNames'");
     }
+
+    @Override
+    public Scope root() {
+        throw new UnsupportedOperationException("Unimplemented method 'root'");
+    }
 }
