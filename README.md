@@ -18,7 +18,7 @@ To compile it locally, ensure you have JDK and Git installed.
 Clone the repository and execute:
 
 ```
-./mvnw clean package -DskipTests=true
+./mvnw clean package -Dmaven.test.skip
 ```
 
 The JAR file will be created in the `target` directory.
