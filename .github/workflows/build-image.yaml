@@ -46,6 +46,6 @@ jobs:
           TAG=${{ inputs.tag || github.ref_name }}
           docker buildx build \
             --file .github/Dockerfile \
-            --tag ghcr.io/$GITHUB_REPOSITORY:${TAG#v} \
+            --tag ghcr.io/${{ github.repository }}:${TAG#v} \
             --push \
             .
