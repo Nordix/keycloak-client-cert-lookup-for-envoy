@@ -44,8 +44,9 @@ jobs:
       - name: Build and Push to GHCR
         run: |
           TAG=${{ inputs.tag || github.ref_name }}
+          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           docker buildx build \
             --file .github/Dockerfile \
-            --tag ghcr.io/${{ github.repository }}:${TAG#v} \
+            --tag ghcr.io/${REPO}:${TAG#v} \
             --push \
             .
