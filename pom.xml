@@ -19,7 +19,7 @@
     <!-- Versions of dependencies -->
     <keycloak.version>26.5.3</keycloak.version>
 
-    <junit.jupiter.version>6.0.2</junit.jupiter.version>
+    <junit.jupiter.version>6.0.3</junit.jupiter.version>
     <jboss.resteasy.version>7.0.1.Final</jboss.resteasy.version>
     <jboss.logmanager.version>3.2.1.Final</jboss.logmanager.version>
     <certy.version>0.4.1</certy.version>
