@@ -45,8 +45,8 @@ jobs:
         run: |
           TAG=${{ inputs.tag || github.ref_name }}
           REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          printf 'FROM scratch\nCOPY target/*.jar /\n' > Dockerfile
           docker buildx build \
-            --file .github/Dockerfile \
             --tag ghcr.io/${REPO}:${TAG#v} \
             --push \
             .
