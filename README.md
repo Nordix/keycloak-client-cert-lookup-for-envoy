@@ -26,10 +26,9 @@ The JAR file will be created in the `target` directory.
 Copy the JAR file to the `providers` directory in your Keycloak distribution.
 For instance, in the official Keycloak Docker image releases, place the JAR file in the `/opt/keycloak/providers/`.
 
-> [!NOTE]
-> A pre-built OCI artifact image is also available at [`ghcr.io/nordix/keycloak-client-cert-lookup-for-envoy:<VERSION>`](https://github.com/Nordix/keycloak-client-cert-lookup-for-envoy/pkgs/container/keycloak-client-cert-lookup-for-envoy).
-> This is not a runnable container image, it contains only the provider JAR file, e.g. `/keycloak-client-cert-lookup-for-envoy-1.0.0.jar`.
-> It is intended to be used with [Kubernetes image volumes](https://kubernetes.io/docs/concepts/storage/volumes/#image) to copy the JAR into your Keycloak container.
+A pre-built OCI artifact image is also available at [`ghcr.io/nordix/keycloak-client-cert-lookup-for-envoy:<VERSION>`](https://github.com/Nordix/keycloak-client-cert-lookup-for-envoy/pkgs/container/keycloak-client-cert-lookup-for-envoy).
+This is not a runnable container image, it contains only the provider JAR file, e.g. `/keycloak-client-cert-lookup-for-envoy-1.0.0.jar`.
+It is intended to be used with [Kubernetes image volumes](https://kubernetes.io/docs/concepts/storage/volumes/#image) to copy the JAR into your Keycloak container.
 
 ## Configuration
 
