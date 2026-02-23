@@ -8,8 +8,9 @@ Instead, Keycloak encourages the development of implementations for different pr
 However, `x509cert-lookup` SPI is considered internal and may change without prior notice.
 A request to make this SPI stable has been submitted here: [keycloak#33818](https://github.com/keycloak/keycloak/issues/33818).
 
-> ⚠️ **Alert:** There are implications that you should be aware of when enabling client certificate lookup in Keycloak.
-For more information, see [Understanding Client Certificate Forwarding and Security Implications](docs/security-and-client-cert-forwarding.md).
+> [!WARNING]
+> There are implications that you should be aware of when enabling client certificate lookup in Keycloak.
+> For more information, see [Understanding Client Certificate Forwarding and Security Implications](docs/security-and-client-cert-forwarding.md).
 
 ## Installation
 
@@ -24,6 +25,11 @@ Clone the repository and execute:
 The JAR file will be created in the `target` directory.
 Copy the JAR file to the `providers` directory in your Keycloak distribution.
 For instance, in the official Keycloak Docker image releases, place the JAR file in the `/opt/keycloak/providers/`.
+
+> [!NOTE]
+> A pre-built OCI artifact image is also available at [`ghcr.io/nordix/keycloak-client-cert-lookup-for-envoy:<VERSION>`](https://github.com/Nordix/keycloak-client-cert-lookup-for-envoy/pkgs/container/keycloak-client-cert-lookup-for-envoy).
+> This is not a runnable container image, it contains only the provider JAR file, e.g. `/keycloak-client-cert-lookup-for-envoy-1.0.0.jar`.
+> It is intended to be used with [Kubernetes image volumes](https://kubernetes.io/docs/concepts/storage/volumes/#image) to copy the JAR into your Keycloak container.
 
 ## Configuration
 
