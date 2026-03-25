@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: contour
+  namespace: projectcontour
+data:
+  contour.yaml: |
+    tls:
+      envoy-client-certificate:
+        name: envoy-client-cert
+        namespace: projectcontour

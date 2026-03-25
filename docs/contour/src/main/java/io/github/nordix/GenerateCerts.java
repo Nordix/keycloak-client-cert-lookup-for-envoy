@@ -1,0 +1,50 @@
+package io.github.nordix;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.Arrays;
+
+import fi.protonode.certy.Credential;
+
+public class GenerateCerts {
+
+    public static void main(String[] args) throws CertificateException, NoSuchAlgorithmException, IOException {
+
+        Path basePath = Paths.get("target/certs");
+        if (!basePath.toFile().exists()) {
+            basePath.toFile().mkdirs();
+        }
+
+        // CA certificates.
+        Credential serverCa = new Credential().subject("CN=server-ca")
+                .writeCertificatesAsPem(basePath.resolve("server-ca.pem"));
+
+        Credential clientCa = new Credential().subject("CN=client-ca")
+                .writeCertificatesAsPem(basePath.resolve("client-ca.pem"));
+
+        // Server certificate for Contour TLS termination (external facing).
+        new Credential().subject("CN=server").issuer(serverCa)
+                .subjectAltName("DNS:keycloak.127.0.0.1.nip.io")
+                .writeCertificatesAsPem(basePath.resolve("server.pem"))
+                .writePrivateKeyAsPem(basePath.resolve("server-key.pem"));
+
+        // Keycloak HTTPS certificate (internal, for Envoy -> Keycloak upstream TLS).
+        new Credential().subject("CN=keycloak").issuer(serverCa)
+                .subjectAltNames(Arrays.asList("DNS:keycloak", "DNS:keycloak.default.svc.cluster.local"))
+                .writeCertificatesAsPem(basePath.resolve("keycloak.pem"))
+                .writePrivateKeyAsPem(basePath.resolve("keycloak-key.pem"));
+
+        // External client certificate.
+        new Credential().subject("CN=authorized-client").issuer(clientCa)
+                .writeCertificatesAsPem(basePath.resolve("client.pem"))
+                .writePrivateKeyAsPem(basePath.resolve("client-key.pem"));
+
+        // Envoy client certificate for upstream mTLS to Keycloak.
+        new Credential().subject("CN=envoy-client").issuer(clientCa)
+                .writeCertificatesAsPem(basePath.resolve("envoy-client.pem"))
+                .writePrivateKeyAsPem(basePath.resolve("envoy-client-key.pem"));
+    }
+}
