@@ -47,22 +47,22 @@ Generate certificates for testing:
 mvn compile exec:java -Dexec.mainClass="io.github.nordix.GenerateCerts"
 ```
 
-Create secrets for the HTTPProxy TLS termination and client certificate validation (in `default` namespace):
+Create secrets for the HTTPProxy TLS termination and CA certificate to validate external clients (in `default` namespace):
 
 ```
-kubectl create secret tls server-cert \
-  --cert=target/certs/server.pem \
-  --key=target/certs/server-key.pem --dry-run=client -o yaml | kubectl apply -f -
+kubectl create secret tls ingress-controller \
+  --cert=target/certs/ingress-controller.pem \
+  --key=target/certs/ingress-controller-key.pem --dry-run=client -o yaml | kubectl apply -f -
 
-kubectl create secret generic client-ca \
-  --from-file=ca.crt=target/certs/client-ca.pem --dry-run=client -o yaml | kubectl apply -f -
+kubectl create secret generic cluster-external-ca \
+  --from-file=ca.crt=target/certs/cluster-external-ca.pem --dry-run=client -o yaml | kubectl apply -f -
 ```
 
 Create secret for upstream TLS validation (Envoy validates Keycloak's HTTPS certificate):
 
 ```
-kubectl create secret generic server-ca \
-  --from-file=ca.crt=target/certs/server-ca.pem --dry-run=client -o yaml | kubectl apply -f -
+kubectl create secret generic cluster-internal-ca \
+  --from-file=ca.crt=target/certs/cluster-internal-ca.pem --dry-run=client -o yaml | kubectl apply -f -
 ```
 
 Create secret for the Envoy client certificate used for upstream mutual TLS to Keycloak (in `projectcontour` namespace):
@@ -86,6 +86,8 @@ Deploy Keycloak with the Envoy client certificate lookup provider to `default` n
 kubectl apply -f manifests/keycloak.yaml
 ```
 
+Keycloak is configured to read certificates from a host mount, so Kubernetes secrets are not needed.
+
 Create HTTPProxy to `default` namespace:
 
 ```
@@ -100,7 +102,7 @@ The username is `admin` and the password is `admin`.
 To fetch token by using the X509 certificate client authentication, you can use the following command (using [httpie](https://httpie.io/)):
 
 ```
-http --verbose --form --verify=target/certs/server-ca.pem --cert=target/certs/client.pem --cert-key=target/certs/client-key.pem POST https://keycloak.127.0.0.1.nip.io:8443/realms/xfcc/protocol/openid-connect/token client_id=xfcc-client grant_type=client_credentials
+http --verbose --form --verify=target/certs/cluster-external-ca.pem --cert=target/certs/external-client.pem --cert-key=target/certs/external-client-key.pem POST https://keycloak.127.0.0.1.nip.io:8443/realms/xfcc/protocol/openid-connect/token client_id=xfcc-client grant_type=client_credentials
 ```
 
 If you do not get a token, wait a few seconds and try again.
