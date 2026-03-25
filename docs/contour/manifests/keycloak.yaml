@@ -49,7 +49,7 @@ spec:
               /opt/keycloak/bin/kc.sh start \
                 --https-certificate-file=/host/docs/contour/target/certs/keycloak.pem \
                 --https-certificate-key-file=/host/docs/contour/target/certs/keycloak-key.pem \
-                --truststore-paths=/host/docs/contour/target/certs/client-ca.pem \
+                --truststore-paths=/host/docs/contour/target/certs/cluster-internal-ca.pem \
                 --https-client-auth=request \
                 --spi-x509cert-lookup-provider=envoy \
                 --spi-x509cert-lookup-envoy-cert-path-verify='[[ "CN=envoy-client" ]]' \

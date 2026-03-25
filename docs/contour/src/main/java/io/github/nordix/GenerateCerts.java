@@ -19,31 +19,31 @@ public class GenerateCerts {
         }
 
         // CA certificates.
-        Credential serverCa = new Credential().subject("CN=server-ca")
-                .writeCertificatesAsPem(basePath.resolve("server-ca.pem"));
+        Credential clusterExternalCa = new Credential().subject("CN=cluster-external-ca")
+                .writeCertificatesAsPem(basePath.resolve("cluster-external-ca.pem"));
 
-        Credential clientCa = new Credential().subject("CN=client-ca")
-                .writeCertificatesAsPem(basePath.resolve("client-ca.pem"));
+        Credential clusterInternalCa = new Credential().subject("CN=cluster-internal-ca")
+                .writeCertificatesAsPem(basePath.resolve("cluster-internal-ca.pem"));
 
-        // Server certificate for Contour TLS termination (external facing).
-        new Credential().subject("CN=server").issuer(serverCa)
+        // Ingress controller certificate for Contour TLS termination (external facing).
+        new Credential().subject("CN=ingress-controller").issuer(clusterExternalCa)
                 .subjectAltName("DNS:keycloak.127.0.0.1.nip.io")
-                .writeCertificatesAsPem(basePath.resolve("server.pem"))
-                .writePrivateKeyAsPem(basePath.resolve("server-key.pem"));
+                .writeCertificatesAsPem(basePath.resolve("ingress-controller.pem"))
+                .writePrivateKeyAsPem(basePath.resolve("ingress-controller-key.pem"));
 
         // Keycloak HTTPS certificate (internal, for Envoy -> Keycloak upstream TLS).
-        new Credential().subject("CN=keycloak").issuer(serverCa)
+        new Credential().subject("CN=keycloak").issuer(clusterInternalCa)
                 .subjectAltNames(Arrays.asList("DNS:keycloak", "DNS:keycloak.default.svc.cluster.local"))
                 .writeCertificatesAsPem(basePath.resolve("keycloak.pem"))
                 .writePrivateKeyAsPem(basePath.resolve("keycloak-key.pem"));
 
         // External client certificate.
-        new Credential().subject("CN=authorized-client").issuer(clientCa)
-                .writeCertificatesAsPem(basePath.resolve("client.pem"))
-                .writePrivateKeyAsPem(basePath.resolve("client-key.pem"));
+        new Credential().subject("CN=authorized-client").issuer(clusterExternalCa)
+                .writeCertificatesAsPem(basePath.resolve("external-client.pem"))
+                .writePrivateKeyAsPem(basePath.resolve("external-client-key.pem"));
 
-        // Envoy client certificate for upstream mTLS to Keycloak.
-        new Credential().subject("CN=envoy-client").issuer(clientCa)
+        // Envoy client certificate (internal for Envoy upstream, mutual TLS auth towards Keycloak).
+        new Credential().subject("CN=envoy-client").issuer(clusterInternalCa)
                 .writeCertificatesAsPem(basePath.resolve("envoy-client.pem"))
                 .writePrivateKeyAsPem(basePath.resolve("envoy-client-key.pem"));
     }

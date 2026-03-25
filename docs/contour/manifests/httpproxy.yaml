@@ -6,9 +6,9 @@ spec:
   virtualhost:
     fqdn: keycloak.127.0.0.1.nip.io
     tls:
-      secretName: server-cert
+      secretName: ingress-controller
       clientValidation:
-        caSecret: client-ca
+        caSecret: cluster-external-ca
         optionalClientCertificate: true
         forwardClientCertificate:
           cert: true
@@ -18,5 +18,5 @@ spec:
           port: 8443
           protocol: tls
           validation:
-            caSecret: server-ca
+            caSecret: cluster-internal-ca
             subjectName: keycloak
